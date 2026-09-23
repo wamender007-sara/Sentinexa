@@ -83,7 +83,7 @@ export default function Screen1HomeDashboard({ onNavigate, onOpenGeoCam }) {
           </button>
         </div>
         <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 180 }}>
-          <HomeMiniMap />
+          <HomeMiniMap onExpand={() => onNavigate?.('map')} />
         </div>
       </div>
 
