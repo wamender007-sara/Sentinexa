@@ -12,6 +12,8 @@ import Screen4GISMapView from './screens/Screen4GISMapView';
 import Screen5TicketTracker from './screens/Screen5TicketTracker';
 import Screen6Telemetry from './screens/Screen6Telemetry';
 import Screen7ProfileSettings from './screens/Screen7ProfileSettings';
+import { useCivicStore } from '../../store/useCivicStore';
+import { startLiveLocationTracking } from '../../services/geoService';
 
 export default function MobileAppContainer({ isStandAlone = false }) {
   const [activeScreen, setActiveScreen] = useState('home');
@@ -28,6 +30,14 @@ export default function MobileAppContainer({ isStandAlone = false }) {
     updateTime();
     const interval = setInterval(updateTime, 30000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Background passive GPS sensing for immediate district & location accuracy
+  useEffect(() => {
+    const unwatch = startLiveLocationTracking((loc) => {
+      useCivicStore.getState().setUserLocation(loc);
+    });
+    return () => unwatch();
   }, []);
 
   const handleCaptureComplete = (arg1, arg2) => {

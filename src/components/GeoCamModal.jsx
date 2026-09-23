@@ -15,8 +15,10 @@ import {
   Crosshair
 } from 'lucide-react';
 
+import { reverseGeocode, getTamilNaduCityHint } from '../services/geoService';
+
 export default function GeoCamModal() {
-  const { isGeoCamOpen, closeGeoCam, triggerEmergencyModal, openComplaintModal, language } = useCivicStore();
+  const { isGeoCamOpen, closeGeoCam, triggerEmergencyModal, openComplaintModal, language, userLocation, setUserLocation } = useCivicStore();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -27,13 +29,16 @@ export default function GeoCamModal() {
   const [cameraError, setCameraError] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
   
-  const [location, setLocation] = useState({
-    lat: 13.0827,
-    long: 80.2707,
-    accuracy: 4,
-    altitude: 12,
-    address: 'Anna Nagar, Chennai, Tamil Nadu - 600040',
-    timestamp: new Date().toISOString()
+  const [location, setLocation] = useState(() => {
+    if (userLocation?.lat) return userLocation;
+    return {
+      lat: 11.0168,
+      long: 76.9558,
+      accuracy: 4,
+      altitude: 12,
+      address: 'Gandhipuram, Coimbatore, Tamil Nadu - 641012',
+      timestamp: new Date().toISOString()
+    };
   });
 
   // Start camera and GPS when modal opens
@@ -112,26 +117,43 @@ export default function GeoCamModal() {
     setIsLocating(true);
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           const lat = pos.coords.latitude;
           const long = pos.coords.longitude;
           const accuracy = Math.round(pos.coords.accuracy || 3);
+          const hint = getTamilNaduCityHint(lat, long);
 
-          setLocation({
+          const updated = {
             lat,
             long,
             accuracy,
             altitude: Math.round(pos.coords.altitude || 8),
-            address: `Lat: ${lat.toFixed(5)}, Long: ${long.toFixed(5)} (Live GPS Fix)`,
+            address: `${hint.area}, ${hint.city}, Tamil Nadu`,
+            district: hint.district,
+            city: hint.city,
             timestamp: new Date().toISOString()
-          });
+          };
+          setLocation(updated);
+          if (setUserLocation) setUserLocation(updated);
           setIsLocating(false);
+
+          const geoRes = await reverseGeocode(lat, long);
+          if (geoRes?.address) {
+            const enriched = {
+              ...updated,
+              address: geoRes.address,
+              district: geoRes.district,
+              city: geoRes.city
+            };
+            setLocation(enriched);
+            if (setUserLocation) setUserLocation(enriched);
+          }
         },
         (err) => {
-          console.warn('Geolocation fallback to Chennai default coordinates:', err);
+          console.warn('Geolocation sensor notice:', err);
           setIsLocating(false);
         },
-        { enableHighAccuracy: true, timeout: 6000 }
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
       );
     } else {
       setIsLocating(false);

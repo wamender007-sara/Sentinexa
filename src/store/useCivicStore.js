@@ -23,9 +23,20 @@ export const useCivicStore = create((set, get) => ({
   // Map controls
   mapType: 'standard', // 'standard' | 'satellite' | 'terrain'
   setMapType: (type) => set({ mapType: type }),
-  mapCenter: [13.0827, 80.2707], // Default Chennai [Lat, Long]
-  mapZoom: 12,
+  mapCenter: [11.0168, 76.9558], // Active TN Map Center [Lat, Long] (Defaults to Coimbatore/Gandhipuram Hub or User GPS)
+  mapZoom: 13,
   setMapCenter: (center, zoom = 13) => set({ mapCenter: center, mapZoom: zoom }),
+
+  // Live GPS User Location State
+  userLocation: null,
+  setUserLocation: (loc) => {
+    if (!loc || !loc.lat || !loc.long) return;
+    set(state => ({
+      userLocation: loc,
+      mapCenter: [loc.lat, loc.long],
+      mapZoom: 14
+    }));
+  },
 
   // Incidents dataset
   incidents: initialIncidents,
@@ -49,8 +60,8 @@ export const useCivicStore = create((set, get) => ({
   nearbyHospitals: [],
   activeEmergencyIncident: null,
   triggerEmergencyModal: (photoData) => {
-    const lat = photoData?.lat || 13.0827;
-    const long = photoData?.long || 80.2707;
+    const lat = photoData?.location?.lat || photoData?.lat || get().userLocation?.lat || 11.0168;
+    const long = photoData?.location?.long || photoData?.long || get().userLocation?.long || 76.9558;
     
     const sortedHospitals = mockHospitals.map(h => {
       const dist = Math.sqrt(Math.pow(h.lat - lat, 2) + Math.pow(h.long - long, 2)) * 111;

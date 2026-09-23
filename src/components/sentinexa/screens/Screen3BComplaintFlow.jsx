@@ -26,19 +26,50 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdTicket, setCreatedTicket] = useState(null);
 
+  const storeUserLocation = useCivicStore(state => state.userLocation);
+  const effectiveLocation = effectiveData?.location || storeUserLocation;
+  const lat = effectiveLocation?.lat || 11.0168;
+  const long = effectiveLocation?.long || 76.9558;
+  const address = effectiveLocation?.address || 'Cross Cut Road, Gandhipuram, Coimbatore - 641012';
+  const district = effectiveLocation?.district || 'Coimbatore';
+  const photoUrl = effectiveData?.image || null;
+
+  const isCoimbatore = district.toLowerCase().includes('coimbatore');
+
   const categories = [
-    { id: 'road', label: 'Roads & Potholes', aiSuggested: true, dept: 'GCC Roads & Bridges Dept / Ward 172' },
-    { id: 'drainage', label: 'Drainage & Sewage', aiSuggested: false, dept: 'CMWSSB (Metro Water & Sewerage)' },
-    { id: 'water', label: 'Water Leak / Burst', aiSuggested: false, dept: 'Chennai Metro Water Supply' },
-    { id: 'eb', label: 'Street Light & Power', aiSuggested: false, dept: 'TANGEDCO (TNEB) Distribution' },
-    { id: 'sanitation', label: 'Garbage & Waste', aiSuggested: false, dept: 'GCC Solid Waste Management Wing' }
+    { 
+      id: 'road', 
+      label: 'Roads & Potholes', 
+      aiSuggested: true, 
+      dept: isCoimbatore ? 'CCMC Roads & Bridges Dept / Ward 52' : 'Municipal Roads & Infrastructure Division' 
+    },
+    { 
+      id: 'drainage', 
+      label: 'Drainage & Sewage', 
+      aiSuggested: false, 
+      dept: isCoimbatore ? 'CCMC Underground Drainage & Sanitation Cell' : 'Municipal Water & Sewerage Board' 
+    },
+    { 
+      id: 'water', 
+      label: 'Water Leak / Burst', 
+      aiSuggested: false, 
+      dept: isCoimbatore ? 'Siruvani / Pilloor Water Supply Wing (CCMC)' : 'Public Water Works Dept' 
+    },
+    { 
+      id: 'eb', 
+      label: 'Street Light & Power', 
+      aiSuggested: false, 
+      dept: 'TANGEDCO (TNEB) Distribution Circle' 
+    },
+    { 
+      id: 'sanitation', 
+      label: 'Garbage & Waste', 
+      aiSuggested: false, 
+      dept: isCoimbatore ? 'CCMC Solid Waste Management Division' : 'Municipal Solid Waste Cell' 
+    }
   ];
 
   const currentCategory = categories.find(c => c.id === selectedCategory) || categories[0];
-  const lat = effectiveData?.location?.lat || 13.0850;
-  const long = effectiveData?.location?.long || 80.2101;
-  const address = effectiveData?.location?.address || '2nd Avenue, Anna Nagar, Chennai - 600040';
-  const photoUrl = effectiveData?.image || null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -57,7 +88,7 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
       lat,
       long,
       state: 'Tamil Nadu',
-      district: 'Chennai',
+      district: district,
       address,
       department: currentCategory.dept,
       status: 'ROUTED_WARD',

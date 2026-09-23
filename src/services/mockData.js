@@ -74,6 +74,30 @@ export const initialIncidents = [
     imageUri: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&auto=format&fit=crop&q=80'
   },
   {
+    id: 'INC-2026-8805',
+    type: 'CIVIC',
+    category: 'road',
+    severity: 3,
+    title: 'Damaged Asphalt & Deep Potholes on 100 Feet Road',
+    tamilTitle: '100 அடி சாலையில் ஆபத்தான குண்டும் குழியுமான சாலை சிதைவு',
+    description: 'Multiple continuous potholes causing severe traffic jam and bike skidding hazard near Gandhipuram 100 Feet Road junction.',
+    tamilDescription: 'காந்திபுரம் 100 அடி சாலை சந்திப்பு அருகே தொடர் பள்ளங்களால் போக்குவரத்து நெரிசல் மற்றும் இருசக்கர வாகன விபத்து அபாயம்.',
+    lat: 11.0202,
+    long: 76.9634,
+    state: 'Tamil Nadu',
+    district: 'Coimbatore',
+    address: '100 Feet Road, Gandhipuram, Coimbatore - 641012',
+    department: 'Coimbatore City Municipal Corporation (CCMC) - Roads Division',
+    routingPortal: 'CCMC Grievance Cell & Ward 52 Engineer Office',
+    truthScore: 97,
+    corroboratingSignals: 8,
+    status: 'VERIFIED',
+    createdAt: new Date(Date.now() - 14 * 60 * 60 * 1000).toISOString(),
+    unacknowledgedDays: 1,
+    retryCount: 0,
+    imageUri: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80'
+  },
+  {
     id: 'INC-2026-7703',
     type: 'CIVIC',
     category: 'water',
@@ -200,5 +224,31 @@ export const mockHospitals = [
     icuBedsAvailable: 28,
     ambulanceUnits: 10,
     distanceKm: '2.0'
+  },
+  {
+    id: 'HOSP-005',
+    name: 'Coimbatore Medical College Hospital (CMCH)',
+    tamilName: 'கோவை அரசு மருத்துவக் கல்லூரி மருத்துவமனை',
+    addressText: 'Trichy Road, Gopalapuram, Coimbatore - 641018',
+    lat: 11.0026,
+    long: 76.9698,
+    phone: '+91 422 230 1393',
+    emergencyHotline: '108 / +91 422 230 0108',
+    icuBedsAvailable: 35,
+    ambulanceUnits: 14,
+    distanceKm: '1.2'
+  },
+  {
+    id: 'HOSP-006',
+    name: 'GKNM Hospital Emergency & Trauma Care',
+    tamilName: 'ஜி.கே.என்.எம் மருத்துவமனை (கோவை)',
+    addressText: 'Avinashi Road, P.N. Palayam, Coimbatore - 641037',
+    lat: 11.0189,
+    long: 76.9806,
+    phone: '+91 422 432 2222',
+    emergencyHotline: '1066 / +91 422 224 5000',
+    icuBedsAvailable: 18,
+    ambulanceUnits: 5,
+    distanceKm: '1.4'
   }
 ];

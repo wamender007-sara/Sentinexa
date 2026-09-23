@@ -22,19 +22,22 @@ export default function Screen3AEmergencyFlow({ photoData, capturedData, onBack,
   const [dispatchStage, setDispatchStage] = useState(0); // 0: Ready, 1: Alert Sent, 2: Acknowledged, 3: Dispatched
   const [selectedHospital, setSelectedHospital] = useState(null);
 
+  const storeUserLocation = useCivicStore(state => state.userLocation);
+  const effectiveLocation = effectiveData?.location || storeUserLocation;
+  const lat = effectiveLocation?.lat || 11.0168;
+  const long = effectiveLocation?.long || 76.9558;
+  const address = effectiveLocation?.address || 'Gandhipuram, Coimbatore - 641012';
+  const district = effectiveLocation?.district || 'Coimbatore';
+  const photoUrl = effectiveData?.image || null;
+
   const fallbackHospitals = [
-    { id: 'h1', name: 'Rajiv Gandhi Govt General Hospital', distance: '1.8 km', eta: '4 mins', trauma: 'Level 1 Trauma' },
-    { id: 'h2', name: 'Apollo Main Hospital, Greams Rd', distance: '2.4 km', eta: '6 mins', trauma: 'Emergency Trauma' },
-    { id: 'h3', name: 'Government Multi Super Speciality', distance: '3.1 km', eta: '8 mins', trauma: 'Critical Care' }
+    { id: 'h1', name: 'Coimbatore Medical College Hospital (CMCH)', distance: '1.2 km', eta: '3 mins', trauma: 'Level 1 Trauma' },
+    { id: 'h2', name: 'GKNM Hospital Emergency & Trauma Care', distance: '1.4 km', eta: '4 mins', trauma: 'Emergency Trauma' },
+    { id: 'h3', name: 'KMCH Emergency Medical Centre', distance: '3.1 km', eta: '7 mins', trauma: 'Critical Care' }
   ];
 
   const hospitalsList = (nearbyHospitals && nearbyHospitals.length > 0) ? nearbyHospitals.slice(0, 3) : fallbackHospitals;
   const activeHospital = selectedHospital || hospitalsList[0];
-
-  const lat = effectiveData?.location?.lat || 13.0604;
-  const long = effectiveData?.location?.long || 80.2496;
-  const address = effectiveData?.location?.address || 'Anna Salai, Thousand Lights, Chennai';
-  const photoUrl = effectiveData?.image || null;
 
   const handleInstantDispatch = () => {
     setDispatchStage(1);
@@ -51,7 +54,7 @@ export default function Screen3AEmergencyFlow({ photoData, capturedData, onBack,
       lat,
       long,
       state: 'Tamil Nadu',
-      district: 'Chennai',
+      district: district,
       address,
       department: '108 Ambulance Unit & Police Control',
       routingPortal: 'State Emergency Command & n8n Priority Webhook',

@@ -28,7 +28,8 @@ export default function Screen1HomeDashboard({
     streakDays, 
     solvedCount, 
     agentLogs, 
-    language 
+    language,
+    userLocation
   } = useCivicStore();
 
   const pendingCount = incidents.filter(i => i.status !== 'SOLVED').length;
@@ -62,7 +63,7 @@ export default function Screen1HomeDashboard({
         <div>
           <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-slate-500 flex items-center space-x-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block mr-1"></span>
-            Greater Chennai & TN Civic Grid
+            {userLocation?.city ? `${userLocation.city} • TN Civic Grid` : 'Coimbatore & TN Civic Grid'}
           </span>
           <h2 className="text-lg font-black tracking-tight text-slate-900">
             {language === 'ta' ? 'அவசர & நகர்ப்புற மையம்' : 'Citizen Incident Command'}
@@ -181,8 +182,10 @@ export default function Screen1HomeDashboard({
           {/* Chennai Central Radar Center */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-24 h-24 rounded-full border border-blue-500/30 animate-ping absolute"></div>
-            <div className="w-16 h-16 rounded-full border border-blue-500/50 flex items-center justify-center bg-blue-50/80 shadow-sm">
-              <span className="text-[9px] font-mono font-bold text-blue-700">Anna Nagar</span>
+            <div className="w-16 h-16 rounded-full border border-blue-500/50 flex items-center justify-center bg-blue-50/80 shadow-sm text-center px-1">
+              <span className="text-[9px] font-mono font-bold text-blue-700 leading-tight">
+                {userLocation?.city ? userLocation.city : 'Gandhipuram'}
+              </span>
             </div>
           </div>
 

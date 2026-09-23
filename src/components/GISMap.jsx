@@ -85,6 +85,22 @@ const createCivicIcon = (type, severity, status) => {
   });
 };
 
+const createUserLocationIcon = () => {
+  const html = `
+    <div style="position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+      <div style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background: rgba(37, 99, 235, 0.35); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+      <div style="width: 18px; height: 18px; border-radius: 50%; background: #2563eb; border: 3px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.35);"></div>
+    </div>
+  `;
+  return L.divIcon({
+    html,
+    className: 'custom-user-marker',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14]
+  });
+};
+
 function MapRecenter({ center, zoom }) {
   const map = useMap();
   useEffect(() => {
@@ -144,7 +160,8 @@ export default function GISMap({ onSelectTicket }) {
     setSelectedIncident, 
     openGeoCam,
     triggerEmergencyModal,
-    language 
+    language,
+    userLocation
   } = useCivicStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -282,11 +299,15 @@ export default function GISMap({ onSelectTicket }) {
           <button
             type="button"
             onClick={() => {
-              setMapCenter([13.0827, 80.2707], 12);
+              if (userLocation?.lat) {
+                setMapCenter([userLocation.lat, userLocation.long], 14);
+              } else {
+                setMapCenter([11.0168, 76.9558], 13);
+              }
               setCategoryFilter('all');
             }}
             className="p-2 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 text-slate-600 hover:text-slate-900 shadow-md transition-colors"
-            title="Reset to Chennai"
+            title="Recenter on My Location"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -350,6 +371,29 @@ export default function GISMap({ onSelectTicket }) {
               pane="overlayPane"
             />
           </>
+        )}
+
+        {/* Live User Location Beacon Marker */}
+        {userLocation?.lat != null && (
+          <Marker
+            key="user-live-beacon"
+            position={[userLocation.lat, userLocation.long]}
+            icon={createUserLocationIcon()}
+          >
+            <Popup>
+              <div className="p-1 font-sans text-xs">
+                <span className="font-bold text-blue-600 flex items-center gap-1 mb-1">
+                  📍 Your Live Position
+                </span>
+                <span className="text-slate-800 font-medium block">
+                  {userLocation.address || 'Gandhipuram, Coimbatore, Tamil Nadu'}
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono block mt-1">
+                  {userLocation.lat.toFixed(5)}°N, {userLocation.long.toFixed(5)}°E (±{userLocation.accuracy || 4}m)
+                </span>
+              </div>
+            </Popup>
+          </Marker>
         )}
 
         {/* Render Markers */}
