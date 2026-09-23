@@ -10,38 +10,39 @@ import Screen6Telemetry from './screens/Screen6Telemetry';
 
 export default function HeroPitchShowcase() {
   return (
-    <div className="w-full min-h-full bg-[#060a14] text-white p-4 md:p-8 flex flex-col overflow-y-auto font-sans">
+    <div className="w-full min-h-full bg-[#F1F5F9] text-slate-800 p-4 md:p-8 flex flex-col overflow-y-auto font-sans select-none">
+      
       {/* Pitch Header Banner */}
       <div className="text-center max-w-4xl mx-auto mb-8 space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-red-500/20 via-cyan-500/20 to-blue-500/20 border border-cyan-500/30 text-xs font-mono text-cyan-300">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
-          <span>AUTONOMOUS MULTI-AGENT CIVIC & EMERGENCY RESPONSE SYSTEM</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs font-mono text-blue-700 shadow-xs">
+          <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-spin" />
+          <span>AUTONOMOUS MULTI-AGENT CIVIC &amp; EMERGENCY RESPONSE SYSTEM</span>
         </div>
 
-        <h1 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+        <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900">
           SENTINEXA
         </h1>
-        <p className="text-sm md:text-lg font-medium text-cyan-200">
+        <p className="text-sm md:text-lg font-bold text-blue-700">
           "From Citizen Tap to Multi-Agent Dispatch in Under 4 Seconds"
         </p>
 
         {/* 4 Key Pillar Badges */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 text-left">
-          <div className="p-3 rounded-xl bg-[#0d1628]/80 border border-red-500/30">
-            <span className="text-xs font-mono text-red-400 font-bold block">&lt; 4.0s DISPATCH</span>
-            <span className="text-[11px] text-slate-300">108/100 automated triage</span>
+          <div className="p-3.5 rounded-2xl bg-white border border-red-200 shadow-sm">
+            <span className="text-xs font-mono text-red-600 font-black block">&lt; 4.0s DISPATCH</span>
+            <span className="text-[11px] text-slate-600 font-medium">108/100 automated triage</span>
           </div>
-          <div className="p-3 rounded-xl bg-[#0d1628]/80 border border-cyan-500/30">
-            <span className="text-xs font-mono text-cyan-400 font-bold block">98.4% AI ACCURACY</span>
-            <span className="text-[11px] text-slate-300">Tensor Computer Vision</span>
+          <div className="p-3.5 rounded-2xl bg-white border border-blue-200 shadow-sm">
+            <span className="text-xs font-mono text-blue-700 font-black block">98.4% AI ACCURACY</span>
+            <span className="text-[11px] text-slate-600 font-medium">Tensor Computer Vision</span>
           </div>
-          <div className="p-3 rounded-xl bg-[#0d1628]/80 border border-emerald-500/30">
-            <span className="text-xs font-mono text-emerald-400 font-bold block">2-DAY SLA ESCALATION</span>
-            <span className="text-[11px] text-slate-300">Zero municipal stagnation</span>
+          <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-sm">
+            <span className="text-xs font-mono text-emerald-700 font-black block">2-DAY SLA ESCALATION</span>
+            <span className="text-[11px] text-slate-600 font-medium">Zero municipal stagnation</span>
           </div>
-          <div className="p-3 rounded-xl bg-[#0d1628]/80 border border-purple-500/30">
-            <span className="text-xs font-mono text-purple-400 font-bold block">TAMIL + ENGLISH MESH</span>
-            <span className="text-[11px] text-slate-300">Tamil Nadu ward routing</span>
+          <div className="p-3.5 rounded-2xl bg-white border border-purple-200 shadow-sm">
+            <span className="text-xs font-mono text-purple-700 font-black block">TAMIL + ENGLISH MESH</span>
+            <span className="text-[11px] text-slate-600 font-medium">Tamil Nadu ward routing</span>
           </div>
         </div>
       </div>
@@ -49,67 +50,67 @@ export default function HeroPitchShowcase() {
       {/* 3-Panel Side-by-Side Pitch Composition */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch max-w-7xl mx-auto w-full">
         
-        {/* PANEL 1: Mobile Phone - Emergency Flow (375px equivalent in col 1-4) */}
+        {/* PANEL 1: Mobile Phone - Emergency Flow */}
         <div className="lg:col-span-4 flex flex-col items-center">
-          <div className="w-full flex items-center justify-between mb-2 text-xs font-mono text-red-400 px-2">
-            <span className="flex items-center gap-1.5 font-bold">
-              <Smartphone className="w-4 h-4" /> PANEL 1: MOBILE SOS FLOW
+          <div className="w-full flex items-center justify-between mb-2 text-xs font-mono text-red-700 px-2 font-bold">
+            <span className="flex items-center gap-1.5">
+              <Smartphone className="w-4 h-4 text-red-600" /> PANEL 1: MOBILE SOS FLOW
             </span>
-            <span className="bg-red-950/80 px-2 py-0.5 rounded border border-red-500/30 text-[10px]">
+            <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded border border-red-200 text-[10px]">
               Screen 3A
             </span>
           </div>
           {/* Mobile phone mock */}
-          <div className="w-full max-w-[360px] h-[650px] bg-[#070b14] rounded-[36px] border-[5px] border-red-500/40 shadow-[0_20px_50px_rgba(239,68,68,0.2)] overflow-hidden flex flex-col relative ring-1 ring-white/10">
+          <div className="w-full max-w-[360px] h-[650px] bg-[#F8FAFC] rounded-[40px] border-[6px] border-slate-300 shadow-xl overflow-hidden flex flex-col relative ring-1 ring-slate-200">
             <Screen3AEmergencyFlow />
           </div>
           <div className="mt-3 text-center px-4">
-            <h4 className="text-xs font-bold text-red-300">One-Tap Multi-Agency Dispatch</h4>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <h4 className="text-xs font-black text-slate-900">One-Tap Multi-Agency Dispatch</h4>
+            <p className="text-[11px] text-slate-500 mt-0.5">
               Live GPS watermark, nearest 3 hospitals with ETA, and instant 108/100 protocol execution.
             </p>
           </div>
         </div>
 
-        {/* PANEL 2: Tablet/Laptop - Full GIS Map View (col 5-8) */}
+        {/* PANEL 2: Tablet/Laptop - Full GIS Map View */}
         <div className="lg:col-span-4 flex flex-col items-center">
-          <div className="w-full flex items-center justify-between mb-2 text-xs font-mono text-cyan-400 px-2">
-            <span className="flex items-center gap-1.5 font-bold">
-              <Tablet className="w-4 h-4" /> PANEL 2: GIS MAP INTELLIGENCE
+          <div className="w-full flex items-center justify-between mb-2 text-xs font-mono text-blue-700 px-2 font-bold">
+            <span className="flex items-center gap-1.5">
+              <Tablet className="w-4 h-4 text-blue-600" /> PANEL 2: GIS MAP INTELLIGENCE
             </span>
-            <span className="bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/30 text-[10px]">
+            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded border border-blue-200 text-[10px]">
               Screen 4
             </span>
           </div>
           {/* Tablet mock */}
-          <div className="w-full h-[650px] bg-[#070b14] rounded-[28px] border-[4px] border-cyan-500/40 shadow-[0_20px_50px_rgba(6,182,212,0.2)] overflow-hidden flex flex-col relative ring-1 ring-white/10">
+          <div className="w-full h-[650px] bg-[#F8FAFC] rounded-[32px] border-[5px] border-slate-300 shadow-xl overflow-hidden flex flex-col relative ring-1 ring-slate-200">
             <Screen4GISMapView />
           </div>
           <div className="mt-3 text-center px-4">
-            <h4 className="text-xs font-bold text-cyan-300">Tamil Nadu GIS Geospatial Grid</h4>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <h4 className="text-xs font-black text-slate-900">Tamil Nadu GIS Geospatial Grid</h4>
+            <p className="text-[11px] text-slate-500 mt-0.5">
               Drilldown hierarchy (Global &gt; India &gt; TN &gt; Chennai), live incident pins, and bottom sheet telemetry.
             </p>
           </div>
         </div>
 
-        {/* PANEL 3: Desktop Command - Telemetry & n8n Agent Stream (col 9-12) */}
+        {/* PANEL 3: Desktop Command - Telemetry & n8n Agent Stream */}
         <div className="lg:col-span-4 flex flex-col items-center">
-          <div className="w-full flex items-center justify-between mb-2 text-xs font-mono text-purple-400 px-2">
-            <span className="flex items-center gap-1.5 font-bold">
-              <Monitor className="w-4 h-4" /> PANEL 3: AGENT TELEMETRY
+          <div className="w-full flex items-center justify-between mb-2 text-xs font-mono text-indigo-700 px-2 font-bold">
+            <span className="flex items-center gap-1.5">
+              <Monitor className="w-4 h-4 text-indigo-600" /> PANEL 3: AGENT TELEMETRY
             </span>
-            <span className="bg-purple-950/80 px-2 py-0.5 rounded border border-purple-500/30 text-[10px]">
+            <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[10px]">
               Screen 6
             </span>
           </div>
           {/* Desktop panel mock */}
-          <div className="w-full h-[650px] bg-[#070b14] rounded-[24px] border-[4px] border-purple-500/40 shadow-[0_20px_50px_rgba(168,85,247,0.2)] overflow-hidden flex flex-col relative ring-1 ring-white/10">
+          <div className="w-full h-[650px] bg-[#F8FAFC] rounded-[28px] border-[5px] border-slate-300 shadow-xl overflow-hidden flex flex-col relative ring-1 ring-slate-200">
             <Screen6Telemetry />
           </div>
           <div className="mt-3 text-center px-4">
-            <h4 className="text-xs font-bold text-purple-300">Grafana Telemetry & n8n Schema</h4>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <h4 className="text-xs font-black text-slate-900">Grafana Telemetry &amp; n8n Schema</h4>
+            <p className="text-[11px] text-slate-500 mt-0.5">
               Live multi-agent consensus, sparkline performance, and verified JSON/YAML payload logs.
             </p>
           </div>
@@ -118,11 +119,11 @@ export default function HeroPitchShowcase() {
       </div>
 
       {/* Bottom Quote / Mission Footer */}
-      <div className="max-w-4xl mx-auto mt-10 pt-6 border-t border-slate-800 text-center text-xs text-slate-400 space-y-2">
-        <p className="font-mono text-cyan-400">
-          SENTINEXA · STATE LEVEL MUNICIPAL & EMERGENCY RESPONSE OPERATING SYSTEM
+      <div className="max-w-4xl mx-auto mt-10 pt-6 border-t border-slate-200 text-center text-xs text-slate-500 space-y-2">
+        <p className="font-mono text-blue-700 font-bold">
+          SENTINEXA · LIGHT EDITION · TAMIL NADU MUNICIPAL &amp; EMERGENCY RESPONSE OPERATING SYSTEM
         </p>
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-slate-500">
           Deployed with OpenStreetMap live tiles, Tamil Nadu District Boundaries, and resilient offline SQLite synchronization.
         </p>
       </div>

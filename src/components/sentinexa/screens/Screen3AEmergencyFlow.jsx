@@ -11,212 +11,255 @@ import {
   Clock, 
   ArrowLeft,
   Flame,
-  Radio
+  Radio,
+  MapPin,
+  Check
 } from 'lucide-react';
 
-export default function Screen3AEmergencyFlow({ photoData, onBack, onComplete }) {
-  const { nearbyHospitals, addIncident, n8nConfig, language } = useCivicStore();
-  const [dispatchStage, setDispatchStage] = useState(0); // 0: Ready, 1: Alert Sent, 2: Acknowledged, 3: Ambulance Dispatched
-  const [selectedHospital, setSelectedHospital] = useState(nearbyHospitals[0] || null);
+export default function Screen3AEmergencyFlow({ photoData, capturedData, onBack, onComplete, onDispatched }) {
+  const effectiveData = photoData || capturedData;
+  const { nearbyHospitals, addIncident } = useCivicStore();
+  const [dispatchStage, setDispatchStage] = useState(0); // 0: Ready, 1: Alert Sent, 2: Acknowledged, 3: Dispatched
+  const [selectedHospital, setSelectedHospital] = useState(null);
 
-  const lat = photoData?.location?.lat || 13.0604;
-  const long = photoData?.location?.long || 80.2496;
-  const address = photoData?.location?.address || 'Anna Salai, Thousand Lights, Chennai';
+  const fallbackHospitals = [
+    { id: 'h1', name: 'Rajiv Gandhi Govt General Hospital', distance: '1.8 km', eta: '4 mins', trauma: 'Level 1 Trauma' },
+    { id: 'h2', name: 'Apollo Main Hospital, Greams Rd', distance: '2.4 km', eta: '6 mins', trauma: 'Emergency Trauma' },
+    { id: 'h3', name: 'Government Multi Super Speciality', distance: '3.1 km', eta: '8 mins', trauma: 'Critical Care' }
+  ];
+
+  const hospitalsList = (nearbyHospitals && nearbyHospitals.length > 0) ? nearbyHospitals.slice(0, 3) : fallbackHospitals;
+  const activeHospital = selectedHospital || hospitalsList[0];
+
+  const lat = effectiveData?.location?.lat || 13.0604;
+  const long = effectiveData?.location?.long || 80.2496;
+  const address = effectiveData?.location?.address || 'Anna Salai, Thousand Lights, Chennai';
+  const photoUrl = effectiveData?.image || null;
 
   const handleInstantDispatch = () => {
     setDispatchStage(1);
 
     const newEmergency = {
-      id: 'EMG-2026-' + Math.floor(1000 + Math.random() * 9000),
+      id: 'SOS-' + Math.floor(1000 + Math.random() * 9000),
       type: 'EMERGENCY',
-      category: 'accident',
+      category: 'medical',
       severity: 5,
       title: 'Priority 1 Life-Threat Emergency Dispatch',
       tamilTitle: 'உயிர் பாதுகாப்பு முதன்மை அவசர கால மீட்பு நடவடிக்கை',
-      description: `Critical emergency reported at ${address}. Target trauma hospital: ${selectedHospital?.name || 'Apollo Emergency'}.`,
+      description: `Critical emergency reported at ${address}. Target trauma hospital: ${activeHospital?.name || 'Govt General Hospital'}.`,
       tamilDescription: `அவசர கால மீட்பு நடவடிக்கை. குறிக்கப்பட்ட இடம்: ${address}.`,
       lat,
       long,
       state: 'Tamil Nadu',
       district: 'Chennai',
       address,
-      department: 'Disaster Rescue Services & 108 Ambulance Unit',
+      department: '108 Ambulance Unit & Police Control',
       routingPortal: 'State Emergency Command & n8n Priority Webhook',
-      truthScore: 99,
-      corroboratingSignals: 14,
       status: 'DISPATCHED',
       createdAt: new Date().toISOString(),
-      unacknowledgedDays: 0,
-      retryCount: 0,
-      imageUri: photoData?.image || 'https://images.unsplash.com/photo-1587740896339-96a76170508d?w=600&auto=format&fit=crop&q=60'
+      photoUrl
     };
 
-    addIncident(newEmergency);
+    if (typeof addIncident === 'function') {
+      addIncident(newEmergency);
+    }
 
-    setTimeout(() => setDispatchStage(2), 1400);
-    setTimeout(() => setDispatchStage(3), 2800);
+    setTimeout(() => setDispatchStage(2), 1200);
+    setTimeout(() => {
+      setDispatchStage(3);
+      if (typeof onComplete === 'function') onComplete(newEmergency);
+      if (typeof onDispatched === 'function') onDispatched(newEmergency);
+    }, 2400);
   };
 
-  const hospitalsList = nearbyHospitals.slice(0, 3);
-
   return (
-    <div className="flex flex-col space-y-4 pb-20 font-sans text-[#14213D] animate-fade-in">
+    <div className="flex flex-col h-full bg-[#F8FAFC] text-slate-800 font-sans overflow-y-auto p-4 space-y-4 pb-20 select-none">
       
-      {/* Top Urgent Header */}
-      <div className="bg-gradient-to-r from-[#C62828] via-[#B71C1C] to-[#991B1B] text-white p-4 rounded-3xl shadow-xl flex items-center justify-between">
+      {/* Top Urgent Header in Clean Light Theme */}
+      <div className="bg-red-600 text-white p-4 rounded-3xl shadow-lg shadow-red-500/25 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <button
             onClick={onBack}
-            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"
+            className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
             <div className="flex items-center space-x-1.5">
-              <span className="font-black text-lg tracking-tight uppercase">EMERGENCY DETECTED</span>
-              <span className="px-2 py-0.5 rounded-full bg-white text-[#C62828] font-mono text-[9px] font-black">
+              <span className="font-black text-base tracking-tight uppercase">EMERGENCY PROTOCOL</span>
+              <span className="px-2 py-0.2 rounded-full bg-white text-red-600 font-mono text-[9px] font-black">
                 CRITICAL
               </span>
             </div>
             <p className="text-[11px] text-red-100 font-mono">
-              Auto GPS Lock: {lat.toFixed(4)}°N, {long.toFixed(4)}°E
+              GPS Lock: {lat.toFixed(4)}°N, {long.toFixed(4)}°E
             </p>
           </div>
         </div>
 
-        <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center animate-bounce">
+        <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center animate-bounce">
           <AlertOctagon className="w-6 h-6 text-white" />
         </div>
       </div>
 
-      {/* QUICK-DIAL ROW (Police 100, Ambulance 108, Fire 101) */}
+      {/* QUICK-DIAL ROW (Ambulance 108, Police 100, Fire 101) */}
       <div className="grid grid-cols-3 gap-2">
         <a
           href="tel:108"
-          className="p-3 bg-[#FFF0F0] border border-[#C62828]/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-xs hover:bg-[#C62828] hover:text-white transition-colors group"
+          className="p-3 bg-red-50 hover:bg-red-100 border border-red-200 rounded-2xl flex flex-col items-center justify-center text-center shadow-xs transition-colors group"
         >
-          <PhoneCall className="w-4 h-4 text-[#C62828] group-hover:text-white mb-1" />
-          <span className="font-black text-base leading-none text-[#C62828] group-hover:text-white">108</span>
-          <span className="text-[9px] font-bold text-[#52616B] group-hover:text-red-100 uppercase">Ambulance</span>
+          <PhoneCall className="w-4 h-4 text-red-600 mb-1" />
+          <span className="font-black text-base leading-none text-red-600">108</span>
+          <span className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">Ambulance</span>
         </a>
 
         <a
           href="tel:100"
-          className="p-3 bg-[#EAF1F8] border border-[#1769E0]/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-xs hover:bg-[#1769E0] hover:text-white transition-colors group"
+          className="p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-2xl flex flex-col items-center justify-center text-center shadow-xs transition-colors group"
         >
-          <PhoneCall className="w-4 h-4 text-[#1769E0] group-hover:text-white mb-1" />
-          <span className="font-black text-base leading-none text-[#1769E0] group-hover:text-white">100</span>
-          <span className="text-[9px] font-bold text-[#52616B] group-hover:text-blue-100 uppercase">Police</span>
+          <ShieldAlert className="w-4 h-4 text-blue-600 mb-1" />
+          <span className="font-black text-base leading-none text-blue-600">100</span>
+          <span className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">Police</span>
         </a>
 
         <a
           href="tel:101"
-          className="p-3 bg-[#FFF5DF] border border-[#C97700]/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-xs hover:bg-[#C97700] hover:text-white transition-colors group"
+          className="p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-2xl flex flex-col items-center justify-center text-center shadow-xs transition-colors group"
         >
-          <PhoneCall className="w-4 h-4 text-[#C97700] group-hover:text-white mb-1" />
-          <span className="font-black text-base leading-none text-[#C97700] group-hover:text-white">101</span>
-          <span className="text-[9px] font-bold text-[#52616B] group-hover:text-amber-100 uppercase">Fire Rescue</span>
+          <Flame className="w-4 h-4 text-amber-600 mb-1" />
+          <span className="font-black text-base leading-none text-amber-600">101</span>
+          <span className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">Fire Rescue</span>
         </a>
       </div>
 
-      {/* REAL-TIME DISPATCH STEPPER */}
-      <div className="bg-white border border-[#D9E2EC] p-4 rounded-2xl shadow-xs space-y-3">
-        <h4 className="font-extrabold text-xs uppercase tracking-wider text-[#52616B]">
-          Live Dispatch Pipeline Status
-        </h4>
-
-        <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
-          <div className={`p-2 rounded-xl border ${dispatchStage >= 1 ? 'bg-[#EAF7EE] border-[#16803C]/40 text-[#16803C] font-bold' : 'bg-[#F1F5F9] border-[#D9E2EC] text-[#94A3B8]'}`}>
-            <span className="block text-sm">01</span>
-            <span className="text-[10px]">Alert Sent</span>
+      {/* Photo Preview if Available */}
+      {photoUrl && (
+        <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm max-h-40 bg-slate-100">
+          <img src={photoUrl} alt="Emergency capture" className="w-full h-full object-cover" />
+          <div className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur text-[10px] font-mono text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/40">
+            Live Geo Evidence Attached
           </div>
-          <div className={`p-2 rounded-xl border ${dispatchStage >= 2 ? 'bg-[#EAF7EE] border-[#16803C]/40 text-[#16803C] font-bold' : 'bg-[#F1F5F9] border-[#D9E2EC] text-[#94A3B8]'}`}>
-            <span className="block text-sm">02</span>
-            <span className="text-[10px]">Acknowledged</span>
-          </div>
-          <div className={`p-2 rounded-xl border ${dispatchStage >= 3 ? 'bg-[#C62828] text-white font-bold' : 'bg-[#F1F5F9] border-[#D9E2EC] text-[#94A3B8]'}`}>
-            <span className="block text-sm">03</span>
-            <span className="text-[10px]">Ambulance En Route</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ONE-TAP HUGE DISPATCH BUTTON */}
-      {dispatchStage === 0 ? (
-        <button
-          onClick={handleInstantDispatch}
-          className="w-full py-5 rounded-3xl bg-gradient-to-r from-[#C62828] via-[#D32F2F] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#7F1D1D] text-white font-black text-base uppercase tracking-wider shadow-xl shadow-[#C62828]/40 border-2 border-white/30 flex items-center justify-center space-x-2 transition-transform active:scale-95 animate-pulse"
-        >
-          <Send className="w-5 h-5" />
-          <span>ONE-TAP DISPATCH TO NEAREST HOSPITAL</span>
-        </button>
-      ) : (
-        <div className="p-4 bg-[#EAF7EE] border border-[#16803C]/40 rounded-2xl text-[#16803C] text-xs font-mono flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <CheckCircle2 className="w-5 h-5 text-[#16803C] shrink-0" />
-            <span>Priority Webhook Dispatched via n8n! Emergency units alerted.</span>
-          </div>
-          <button
-            onClick={onComplete}
-            className="px-3 py-1 rounded-lg bg-[#16803C] text-white font-bold text-xs shrink-0"
-          >
-            Track in Tickets
-          </button>
         </div>
       )}
 
-      {/* NEAREST 3 HOSPITALS (Name, Distance, ETA) */}
-      <div className="bg-white border border-[#D9E2EC] p-4 rounded-2xl shadow-xs space-y-3">
+      {/* NEAREST 3 HOSPITALS WITH LIVE ETAs */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-1.5">
-            <Stethoscope className="w-4 h-4 text-[#C62828]" />
-            <h4 className="font-extrabold text-xs uppercase tracking-wider text-[#14213D]">
-              Nearest 3 Trauma Centers
-            </h4>
+            <Stethoscope className="w-4 h-4 text-red-600" />
+            <h3 className="font-black text-xs uppercase tracking-wider text-slate-900">
+              Nearest Trauma Centers (ETA)
+            </h3>
           </div>
-          <span className="text-[10px] font-mono text-[#52616B]">Live GPS Radii</span>
+          <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            Real-Time Bed Sync
+          </span>
         </div>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {hospitalsList.map((hosp, idx) => (
             <div
-              key={hosp.id}
+              key={hosp.id || idx}
               onClick={() => setSelectedHospital(hosp)}
-              className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                selectedHospital?.id === hosp.id
-                  ? 'bg-[#FFF0F0] border-[#C62828] shadow-sm'
-                  : 'bg-[#F8FAFC] border-[#D9E2EC] hover:border-[#C62828]/40'
+              className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                activeHospital?.name === hosp.name
+                  ? 'bg-red-50 border-red-400 ring-1 ring-red-400 shadow-xs'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300'
               }`}
             >
               <div className="space-y-0.5">
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-4 h-4 rounded-full bg-[#0B2E59] text-white text-[10px] font-mono font-bold flex items-center justify-center">
-                    {idx + 1}
-                  </span>
-                  <h5 className="font-extrabold text-xs text-[#14213D] leading-tight">
-                    {hosp.name}
-                  </h5>
+                <div className="flex items-center space-x-2">
+                  <span className="font-bold text-xs text-slate-900">{hosp.name}</span>
+                  {activeHospital?.name === hosp.name && (
+                    <span className="w-2 h-2 rounded-full bg-red-600"></span>
+                  )}
                 </div>
-                <p className="text-[11px] text-[#52616B] font-mono pl-5">
-                  {hosp.distanceKm} km away • <strong className="text-[#C62828]">ETA {Math.round(parseFloat(hosp.distanceKm) * 2.5)} mins</strong>
-                </p>
-                <div className="pl-5 flex items-center space-x-3 text-[10px] font-mono text-[#16803C]">
-                  <span>ICU Beds: {hosp.icuBedsAvailable}</span>
-                  <span>Ambulance: {hosp.ambulanceUnits} units</span>
+                <div className="flex items-center space-x-2 text-[10px] font-mono text-slate-500">
+                  <span>{hosp.distance || '2.1 km'}</span>
+                  <span>•</span>
+                  <span className="text-red-600 font-bold">{hosp.trauma || 'Trauma Center'}</span>
                 </div>
               </div>
 
-              <a
-                href={`tel:${hosp.emergencyHotline.split('/')[0].trim()}`}
-                className="p-2 rounded-xl bg-white border border-[#D9E2EC] text-[#C62828] hover:bg-[#C62828] hover:text-white shadow-xs shrink-0"
-                title="Call Emergency Hotline"
-              >
-                <PhoneCall className="w-4 h-4" />
-              </a>
+              <div className="text-right">
+                <span className="text-xs font-black font-mono text-red-600 bg-white px-2 py-1 rounded-lg border border-red-200 shadow-xs">
+                  {hosp.eta || '5 mins'}
+                </span>
+              </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* ONE-TAP AUTO DISPATCH HERO BUTTON */}
+      {dispatchStage === 0 && (
+        <button
+          onClick={handleInstantDispatch}
+          className="w-full py-4 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-red-500/30 flex items-center justify-center space-x-2 transition-transform active:scale-95"
+        >
+          <Send className="w-4 h-4 animate-pulse" />
+          <span>CONFIRM &amp; DISPATCH ALL EMERGENCY UNITS</span>
+        </button>
+      )}
+
+      {/* LIVE MULTI-AGENT DISPATCH STEPPER */}
+      {dispatchStage > 0 && (
+        <div className="bg-white border border-red-200 rounded-2xl p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-900">
+            <span className="flex items-center gap-1.5">
+              <Radio className="w-4 h-4 text-red-600 animate-spin" />
+              Multi-Agent Live Dispatch Stepper
+            </span>
+            <span className="text-[10px] font-mono text-red-600 font-bold">
+              {dispatchStage === 1 && 'Broadcasting SOS...'}
+              {dispatchStage === 2 && 'Trauma Unit Alerted'}
+              {dispatchStage === 3 && 'Ambulance In Route'}
+            </span>
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center space-x-3 text-xs">
+              <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">
+                ✓
+              </div>
+              <span className="text-slate-800 font-medium">GPS Geolocation Verified &amp; Watermarked</span>
+            </div>
+
+            <div className="flex items-center space-x-3 text-xs">
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                dispatchStage >= 1 ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500'
+              }`}>
+                {dispatchStage >= 1 ? '✓' : '2'}
+              </div>
+              <span className={dispatchStage >= 1 ? 'text-slate-800 font-medium' : 'text-slate-400'}>
+                108 Emergency Webhook Dispatched
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-3 text-xs">
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                dispatchStage >= 2 ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500'
+              }`}>
+                {dispatchStage >= 2 ? '✓' : '3'}
+              </div>
+              <span className={dispatchStage >= 2 ? 'text-slate-800 font-medium' : 'text-slate-400'}>
+                Hospital Bed &amp; Trauma Team Reserved ({activeHospital?.name})
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-3 text-xs">
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                dispatchStage >= 3 ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500'
+              }`}>
+                {dispatchStage >= 3 ? '✓' : '4'}
+              </div>
+              <span className={dispatchStage >= 3 ? 'text-slate-800 font-medium' : 'text-slate-400'}>
+                Ambulance En Route (ETA {activeHospital?.eta})
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useCivicStore } from '../../../store/useCivicStore';
-import { translationService } from '../../../services/translationService';
 import { 
   FileText, 
   Send, 
@@ -11,46 +10,49 @@ import {
   Sparkles, 
   Clock,
   ShieldCheck,
-  MapPin
+  MapPin,
+  AlertTriangle
 } from 'lucide-react';
 
-export default function Screen3BComplaintFlow({ photoData, onBack, onComplete }) {
-  const { addIncident, language } = useCivicStore();
-  const [selectedCategory, setSelectedCategory] = useState('drainage');
-  const [title, setTitle] = useState('Storm Water Drain Overflow & Hazard');
-  const [tamilTitle, setTamilTitle] = useState('மழைநீர் வடிகால் அடைப்பு மற்றும் கழிவுநீர் கசிவு');
-  const [description, setDescription] = useState('Severe sewage drain leak on main road causing mosquito breeding and transport hazard.');
-  const [tamilDescription, setTamilDescription] = useState('முக்கிய சாலையில் கழிவுநீர் வழிந்தோடி கொசு உற்பத்தியும் சுகாதார சீர்கேடும் ஏற்படுகிறது.');
-  const [activeLang, setActiveLang] = useState('ta'); // 'ta' | 'en'
+export default function Screen3BComplaintFlow({ photoData, capturedData, onBack, onComplete, onSubmitSuccess }) {
+  const effectiveData = photoData || capturedData;
+  const { addIncident } = useCivicStore();
+  const [selectedCategory, setSelectedCategory] = useState('road');
+  const [title, setTitle] = useState('Deep Pothole & Road Cave-in on Main Junction');
+  const [tamilTitle, setTamilTitle] = useState('முக்கிய சந்திப்பில் அபாயகரமான பள்ளம் மற்றும் சாலை சிதைவு');
+  const [description, setDescription] = useState('Severe road pothole causing two-wheeler skidding hazards during peak traffic hours.');
+  const [tamilDescription, setTamilDescription] = useState('பீக் ஹவர்ஸில் இருசக்கர வாகனங்கள் சறுக்கி விழும் வகையில் ஆபத்தான சாலை பள்ளம்.');
+  const [activeLang, setActiveLang] = useState('en'); // 'en' | 'ta'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdTicket, setCreatedTicket] = useState(null);
 
   const categories = [
-    { id: 'drainage', label: 'Drainage & Sewage', aiSuggested: true, dept: 'Greater Chennai Corporation (GCC) - Storm Water Wing' },
-    { id: 'water', label: 'Drinking Water Burst', aiSuggested: false, dept: 'Chennai Metro Water (CMWSSB)' },
-    { id: 'road', label: 'Road Cave-in / Pothole', aiSuggested: false, dept: 'State Highways Dept & Corporation' },
-    { id: 'eb', label: 'Electricity / Cable Snap', aiSuggested: false, dept: 'TNEB Electricity Board' },
-    { id: 'sanitation', label: 'Garbage Dump & Waste', aiSuggested: false, dept: 'GCC Solid Waste Management Wing' }
+    { id: 'road', label: 'Roads & Potholes', aiSuggested: true, dept: 'GCC Roads & Bridges Dept / Ward 172' },
+    { id: 'drainage', label: 'Drainage & Sewage', aiSuggested: false, dept: 'CMWSSB (Metro Water & Sewerage)' },
+    { id: 'water', label: 'Water Leak / Burst', aiSuggested: false, dept: 'Chennai Metro Water Supply' },
+    { id: 'eb', label: 'Street Light & Power', aiSuggested: false, dept: 'TANGEDCO (TNEB) Distribution' },
+    { id: 'sanitation', label: 'Garbage & Waste', aiSuggested: false, dept: 'GCC Solid Waste Management Wing' }
   ];
 
   const currentCategory = categories.find(c => c.id === selectedCategory) || categories[0];
-  const lat = photoData?.location?.lat || 13.0850;
-  const long = photoData?.location?.long || 80.2101;
-  const address = photoData?.location?.address || '2nd Avenue, Anna Nagar, Chennai - 600040';
+  const lat = effectiveData?.location?.lat || 13.0850;
+  const long = effectiveData?.location?.long || 80.2101;
+  const address = effectiveData?.location?.address || '2nd Avenue, Anna Nagar, Chennai - 600040';
+  const photoUrl = effectiveData?.image || null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const ticketId = 'INC-2026-' + Math.floor(1000 + Math.random() * 9000);
+    const ticketId = 'CIVIC-' + Math.floor(1000 + Math.random() * 9000);
     const newComplaint = {
       id: ticketId,
       type: 'CIVIC',
       category: selectedCategory,
-      severity: 3,
-      title,
+      severity: 2,
+      title: activeLang === 'ta' ? tamilTitle : title,
       tamilTitle,
-      description,
+      description: activeLang === 'ta' ? tamilDescription : description,
       tamilDescription,
       lat,
       long,
@@ -58,217 +60,256 @@ export default function Screen3BComplaintFlow({ photoData, onBack, onComplete })
       district: 'Chennai',
       address,
       department: currentCategory.dept,
-      routingPortal: 'State Grievance Cell & n8n Escalation Loop',
-      truthScore: 96,
-      corroboratingSignals: 5,
-      status: 'VERIFIED',
+      status: 'ROUTED_WARD',
       createdAt: new Date().toISOString(),
-      unacknowledgedDays: 0,
-      retryCount: 0,
-      imageUri: photoData?.image || 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=60'
+      slaHours: 48,
+      photoUrl: photoUrl
     };
 
-    addIncident(newComplaint);
+    if (typeof addIncident === 'function') {
+      addIncident(newComplaint);
+    }
 
     setTimeout(() => {
       setIsSubmitting(false);
       setCreatedTicket(newComplaint);
-    }, 1000);
+      if (typeof onComplete === 'function') onComplete(newComplaint);
+      if (typeof onSubmitSuccess === 'function') onSubmitSuccess(newComplaint);
+    }, 900);
   };
 
   return (
-    <div className="flex flex-col space-y-4 pb-20 font-sans text-[#14213D] animate-fade-in">
+    <div className="flex flex-col h-full bg-[#F8FAFC] text-slate-800 font-sans overflow-y-auto">
       
-      {/* Header */}
-      <div className="bg-[#0B2E59] text-white p-4 rounded-3xl shadow-lg flex items-center justify-between">
+      {/* Top Header */}
+      <div className="p-4 border-b border-slate-200 bg-white sticky top-0 z-20 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-3">
-          <button onClick={onBack} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
+          <button
+            onClick={onBack}
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors"
+          >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h3 className="font-black text-base tracking-tight uppercase">CIVIC COMPLAINT SUBMISSION</h3>
-            <p className="text-[11px] text-blue-200 font-mono">AI Verification & Automated Department Dispatch</p>
+            <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-1.5">
+              <FileText className="w-4 h-4 text-blue-600" />
+              Civic Complaint Dispatch
+            </h2>
+            <p className="text-[10px] font-mono text-slate-500">Autonomous Ward Triage Protocol</p>
           </div>
         </div>
 
-        <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-cyan-300">
-          <FileText className="w-5 h-5" />
+        <div className="flex items-center space-x-1.5">
+          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+          <span className="text-[11px] font-mono font-bold text-blue-600">AI AUTO-ROUTER</span>
         </div>
       </div>
 
       {createdTicket ? (
-        /* Post-Submission Success Card with Expected Response Window (2-3 Days) */
-        <div className="bg-white border border-[#D9E2EC] p-6 rounded-3xl shadow-sm text-center space-y-4 animate-fade-in">
-          <div className="w-14 h-14 rounded-full bg-[#EAF7EE] text-[#16803C] flex items-center justify-center mx-auto">
+        /* Success Confirmation Card */
+        <div className="p-5 flex-1 flex flex-col justify-center items-center text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-lg border-2 border-emerald-300">
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
-          <div>
-            <span className="text-xs font-mono font-bold text-[#1769E0]">
-              Ticket Reference: #{createdTicket.id}
+          <div className="space-y-1">
+            <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-xs font-bold inline-block">
+              TICKET REGISTERED & ROUTED
             </span>
-            <h4 className="font-extrabold text-lg text-[#14213D] mt-0.5">
-              Complaint Verified & Dispatched
-            </h4>
+            <h3 className="text-lg font-black text-slate-900 pt-1">
+              Ticket #{createdTicket.id}
+            </h3>
+            <p className="text-xs text-slate-600 max-w-xs">
+              Forwarded autonomously to <strong className="text-blue-700">{createdTicket.department}</strong>.
+            </p>
           </div>
 
-          <div className="p-3.5 bg-[#F8FAFC] border border-[#D9E2EC] rounded-2xl text-left space-y-2 text-xs font-mono text-[#52616B]">
-            <p><strong className="text-[#0B2E59]">Routed Department:</strong> {createdTicket.department}</p>
-            <p><strong className="text-[#0B2E59]">GPS Location:</strong> {createdTicket.address}</p>
-            <p><strong className="text-[#16803C]">Truth Verification:</strong> 96% Confidence (Geo-Cam Confirmed)</p>
-          </div>
-
-          {/* Expected Response Window (2-3 Days) */}
-          <div className="p-3 bg-[#FFF5DF] border border-[#C97700]/30 rounded-2xl text-left flex items-start space-x-2 text-xs">
-            <Clock className="w-4 h-4 text-[#C97700] shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold text-[#C97700]">Expected Response Window: 48-72 Hours (2-3 Days)</span>
-              <p className="text-[11px] text-[#52616B] mt-0.5">
-                If unacknowledged after 3 days, SENTINEXA will auto-escalate this ticket to Tier 2 (District Collectorate & CM Special Cell) via n8n loops.
-              </p>
+          {/* SLA Countdown Card */}
+          <div className="w-full max-w-sm p-4 rounded-2xl bg-amber-50 border border-amber-200 text-left space-y-1.5">
+            <div className="flex items-center space-x-1.5 text-amber-800 text-xs font-bold">
+              <Clock className="w-4 h-4 text-amber-600" />
+              <span>48-Hour Auto-Escalation SLA Active</span>
             </div>
+            <p className="text-[11px] text-amber-900 leading-relaxed">
+              If not resolved by ward engineer within 48 hours, this complaint automatically escalates to the Tamil Nadu Commissioner of Municipal Administration.
+            </p>
           </div>
 
           <button
-            onClick={onComplete}
-            className="w-full py-3 rounded-2xl bg-[#1769E0] text-white font-extrabold text-xs uppercase tracking-wider shadow-sm"
+            onClick={onBack}
+            className="w-full max-w-sm py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all"
           >
-            Track in Tickets
+            Return to Dashboard
           </button>
         </div>
       ) : (
-        /* Complaint Form */
-        <form onSubmit={handleSubmit} className="space-y-4">
+        /* Complaint Entry Form */
+        <form onSubmit={handleSubmit} className="p-4 space-y-4 pb-8">
           
-          {/* AI Category Chips with Auto-suggestion */}
-          <div className="bg-white border border-[#D9E2EC] p-4 rounded-2xl shadow-xs space-y-2.5">
+          {/* Photo Preview Strip if Available */}
+          {photoUrl && (
+            <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm max-h-44 bg-slate-100">
+              <img src={photoUrl} alt="Incident preview" className="w-full h-full object-cover" />
+              <div className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur text-[10px] font-mono text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/40">
+                Verified Geo Evidence Included
+              </div>
+            </div>
+          )}
+
+          {/* AI Category Chips */}
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-[#52616B] flex items-center space-x-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#1769E0]" />
-                <span>Issue Category (AI Auto-Suggested)</span>
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" /> Select Category
+              </span>
+              <span className="text-[10px] font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                AI Vision Auto-Detected
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-1.5">
-              {categories.map(cat => (
+            <div className="grid grid-cols-2 gap-2">
+              {categories.map((cat) => (
                 <button
                   type="button"
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                  className={`p-2.5 rounded-xl border text-left transition-all text-xs flex flex-col justify-between ${
                     selectedCategory === cat.id
-                      ? 'bg-[#1769E0] text-white shadow-xs'
-                      : 'bg-[#F1F5F9] text-[#52616B] hover:text-[#14213D]'
+                      ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-sm ring-1 ring-blue-500'
+                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  <span>{cat.label}</span>
-                  {cat.aiSuggested && (
-                    <span className={`text-[9px] font-mono px-1 rounded ${selectedCategory === cat.id ? 'bg-white/20 text-white' : 'bg-[#EAF1F8] text-[#1769E0]'}`}>
-                      AI Match
-                    </span>
-                  )}
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-bold">{cat.label}</span>
+                    {cat.aiSuggested && (
+                      <span className="text-[9px] bg-blue-600 text-white font-mono px-1.5 py-0.2 rounded font-bold">
+                        98% Match
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-500 mt-1 line-clamp-1">{cat.dept}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* ROUTING PREVIEW CARD */}
-          <div className="p-3.5 rounded-2xl bg-[#EAF1F8] border border-[#1769E0]/30 flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-white text-[#1769E0] flex items-center justify-center font-bold shadow-xs shrink-0">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-[10px] font-mono font-bold uppercase text-[#1769E0]">
-                Official Routing Destination:
+          {/* Routing Preview Card */}
+          <div className="p-3 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono text-slate-500 uppercase font-bold flex items-center gap-1">
+                <Building2 className="w-3.5 h-3.5 text-blue-600" /> Target Department Routing
               </span>
-              <h5 className="font-extrabold text-xs text-[#0B2E59] leading-tight">
-                {currentCategory.dept}
-              </h5>
-              <p className="text-[10px] text-[#52616B] font-mono">Automated delivery via municipal API & CM Cell</p>
+              <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded font-mono font-semibold">
+                Direct API Sync
+              </span>
             </div>
+            <p className="text-xs font-bold text-slate-900">{currentCategory.dept}</p>
+            <p className="text-[11px] text-slate-500 flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-blue-600 shrink-0" />
+              <span>{address}</span>
+            </p>
           </div>
 
-          {/* Editable Complaint Template with English/Tamil Toggle */}
-          <div className="bg-white border border-[#D9E2EC] p-4 rounded-2xl shadow-xs space-y-3">
-            <div className="flex items-center justify-between border-b border-[#D9E2EC] pb-2">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-[#14213D] flex items-center space-x-1">
-                <Languages className="w-3.5 h-3.5 text-[#1769E0]" />
-                <span>Grievance Memorandum Draft</span>
+          {/* Bilingual Memo Toggle & Inputs */}
+          <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <Languages className="w-4 h-4 text-blue-600" /> Official Memo Format
               </span>
 
-              {/* Language Switch */}
-              <div className="flex bg-[#F1F5F9] p-0.5 rounded-lg border border-[#D9E2EC] text-[11px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => setActiveLang('ta')}
-                  className={`px-2.5 py-0.5 rounded-md ${activeLang === 'ta' ? 'bg-[#1769E0] text-white' : 'text-[#52616B]'}`}
-                >
-                  தமிழ்
-                </button>
+              {/* Language Pill */}
+              <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => setActiveLang('en')}
-                  className={`px-2.5 py-0.5 rounded-md ${activeLang === 'en' ? 'bg-[#1769E0] text-white' : 'text-[#52616B]'}`}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    activeLang === 'en' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
-                  ENG
+                  English
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveLang('ta')}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    activeLang === 'ta' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  தமிழ்
                 </button>
               </div>
             </div>
 
             {activeLang === 'ta' ? (
               <div className="space-y-2">
-                <input
-                  type="text"
-                  value={tamilTitle}
-                  onChange={(e) => setTamilTitle(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#D9E2EC] rounded-xl px-3 py-2 text-xs font-semibold text-[#14213D]"
-                  placeholder="புகார் தலைப்பு..."
-                  required
-                />
-                <textarea
-                  rows={3}
-                  value={tamilDescription}
-                  onChange={(e) => setTamilDescription(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#D9E2EC] rounded-xl px-3 py-2 text-xs text-[#14213D]"
-                  placeholder="புகார் விவரம்..."
-                  required
-                />
+                <div>
+                  <label className="text-[10px] font-bold text-slate-600 uppercase">புகார் தலைப்பு</label>
+                  <input
+                    type="text"
+                    value={tamilTitle}
+                    onChange={(e) => setTamilTitle(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500"
+                    placeholder="புகார் தலைப்பு..."
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-600 uppercase">விவரங்கள்</label>
+                  <textarea
+                    rows={3}
+                    value={tamilDescription}
+                    onChange={(e) => setTamilDescription(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
+                    placeholder="புகார் விவரம்..."
+                    required
+                  />
+                </div>
               </div>
             ) : (
               <div className="space-y-2">
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#D9E2EC] rounded-xl px-3 py-2 text-xs font-semibold text-[#14213D]"
-                  placeholder="Complaint title..."
-                  required
-                />
-                <textarea
-                  rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#D9E2EC] rounded-xl px-3 py-2 text-xs text-[#14213D]"
-                  placeholder="Complaint description..."
-                  required
-                />
+                <div>
+                  <label className="text-[10px] font-bold text-slate-600 uppercase">Complaint Title</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500"
+                    placeholder="Complaint title..."
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-600 uppercase">Description & Details</label>
+                  <textarea
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
+                    placeholder="Complaint description..."
+                    required
+                  />
+                </div>
               </div>
             )}
+          </div>
 
-            <div className="flex items-center space-x-1.5 text-[10px] font-mono text-[#52616B] pt-1">
-              <MapPin className="w-3.5 h-3.5 text-[#1769E0]" />
-              <span className="truncate">{address}</span>
+          {/* 2-3 Day Auto-Escalation Guarantee Badge */}
+          <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 flex items-start space-x-2.5">
+            <Clock className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+            <div className="text-[11px] text-amber-900">
+              <span className="font-bold block">Tamil Nadu 48-Hour Resolution Guarantee</span>
+              Automated multi-agent retries ping GCC ward supervisor every 6 hours. Auto-escalates on day 2.
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Action Button */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#1769E0] to-[#0B2E59] hover:from-[#1253B3] hover:to-[#081F3D] text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-[#1769E0]/25 flex items-center justify-center space-x-2 transition-transform active:scale-95 disabled:opacity-50"
+            className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-blue-500/25 flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
-            <span>{isSubmitting ? 'GENERATING TICKET & ROUTING...' : 'SUBMIT CIVIC COMPLAINT'}</span>
+            <span>{isSubmitting ? 'GENERATING TICKET & ROUTING...' : 'CONFIRM & SUBMIT CIVIC COMPLAINT'}</span>
           </button>
 
         </form>

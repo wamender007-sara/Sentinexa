@@ -28,20 +28,20 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#060a14] text-[#14213D] flex flex-col font-sans selection:bg-[#1769E0] selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#F1F5F9] text-slate-800 flex flex-col font-sans selection:bg-blue-600 selection:text-white overflow-x-hidden">
       {/* Universal Sentinexa Viewport / Breakpoint Switcher */}
       <SentinexaViewportBar activeMode={viewMode} onSelectMode={setViewMode} />
 
       {/* Main View Area */}
       <main className="flex-1 w-full flex flex-col">
         {viewMode === 'mobile' && (
-          <div className="flex-1 w-full flex flex-col items-center justify-center p-3 sm:p-6 bg-gradient-to-b from-[#060a14] via-[#090f1f] to-[#070b14]">
+          <div className="flex-1 w-full flex flex-col items-center justify-center p-3 sm:p-6 bg-[#F1F5F9]">
             {/* Quick Context helper banner */}
             <div className="mb-4 text-center max-w-md">
-              <span className="text-[11px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full">
-                Interactive 375×812 Mobile Viewport
+              <span className="text-[11px] font-mono bg-white text-blue-700 border border-slate-200 px-3 py-1 rounded-full shadow-xs font-bold">
+                📱 Interactive 375×812 Mobile Viewport
               </span>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Tap bottom tabs (Home, GIS Map, Geo-Cam, Tickets, Agents, Config) or launch Emergency / Complaint flows.
               </p>
             </div>

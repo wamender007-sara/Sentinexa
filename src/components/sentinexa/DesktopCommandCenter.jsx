@@ -118,45 +118,46 @@ export default function DesktopCommandCenter() {
   }));
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#070b14] text-slate-100 overflow-hidden select-none font-sans">
-      {/* Top Desktop App Bar */}
-      <header className="h-14 bg-[#090e1c] border-b border-cyan-500/20 px-6 flex items-center justify-between shrink-0 z-30">
+    <div className="w-full h-full flex flex-col bg-[#F8FAFC] text-slate-800 overflow-hidden select-none font-sans">
+      
+      {/* Top Desktop App Bar - Clean Light UI */}
+      <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-30 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/30">
-            <Shield className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/20 text-white">
+            <Shield className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-black tracking-wider text-white">SENTINEXA</h1>
-              <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded font-mono font-semibold">
-                COMMAND CENTER v2.4
+              <h1 className="text-sm font-black tracking-wider text-slate-900">SENTINEXA</h1>
+              <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono font-bold">
+                COMMAND CENTER v2.4 (LIGHT)
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 font-mono">Autonomous Multi-Agent Civic & Emergency Grid · Tamil Nadu</p>
+            <p className="text-[10px] text-slate-500 font-mono">Autonomous Multi-Agent Civic &amp; Emergency Grid · Tamil Nadu</p>
           </div>
         </div>
 
         {/* Global Status Telemetry Strip */}
         <div className="flex items-center gap-6 text-xs font-mono">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-slate-400">n8n Workflow Engine:</span>
-            <span className="text-emerald-400 font-bold">ACTIVE (142ms)</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-slate-500">n8n Engine:</span>
+            <span className="text-emerald-700 font-bold">ACTIVE (142ms)</span>
           </div>
-          <div className="flex items-center gap-2 border-l border-slate-800 pl-6">
-            <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="text-slate-400">Trained Agents:</span>
-            <span className="text-cyan-300 font-bold">5 Autonomous</span>
+          <div className="flex items-center gap-2 border-l border-slate-200 pl-6">
+            <Cpu className="w-3.5 h-3.5 text-blue-600" />
+            <span className="text-slate-500">Trained Agents:</span>
+            <span className="text-blue-700 font-bold">5 Autonomous</span>
           </div>
-          <div className="flex items-center gap-2 border-l border-slate-800 pl-6">
-            <Activity className="w-3.5 h-3.5 text-orange-400" />
-            <span className="text-slate-400">Active Queue:</span>
-            <span className="text-orange-300 font-bold">14 Live</span>
+          <div className="flex items-center gap-2 border-l border-slate-200 pl-6">
+            <Activity className="w-3.5 h-3.5 text-amber-600" />
+            <span className="text-slate-500">Active Queue:</span>
+            <span className="text-amber-700 font-bold">14 Live</span>
           </div>
-          <div className="flex items-center gap-2 border-l border-slate-800 pl-6">
-            <Globe className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-slate-400">Region:</span>
-            <span className="text-slate-200">Tamil Nadu / Chennai</span>
+          <div className="flex items-center gap-2 border-l border-slate-200 pl-6">
+            <Globe className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="text-slate-500">Region:</span>
+            <span className="text-slate-800 font-semibold">Tamil Nadu / Chennai</span>
           </div>
         </div>
       </header>
@@ -165,34 +166,36 @@ export default function DesktopCommandCenter() {
       <div className="flex-1 flex overflow-hidden">
         
         {/* COLUMN 1: LEFT NAVIGATION & INCIDENT QUEUE (320px) */}
-        <div className="w-[320px] bg-[#0b1122] border-r border-slate-800 flex flex-col shrink-0">
+        <div className="w-[320px] bg-white border-r border-slate-200 flex flex-col shrink-0">
+          
           {/* Filter Toolbar */}
-          <div className="p-3 border-b border-slate-800/80 space-y-2">
+          <div className="p-3 border-b border-slate-100 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wide">
-                <Filter className="w-3.5 h-3.5 text-cyan-400" /> Incident Queue
+              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wide">
+                <Filter className="w-3.5 h-3.5 text-blue-600" /> Incident Queue
               </span>
-              <span className="text-[10px] font-mono bg-cyan-950/60 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/30">
+              <span className="text-[10px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200 font-bold">
                 {incidents.length} Pending
               </span>
             </div>
+            
             {/* Filter buttons */}
             <div className="flex gap-1">
               <button 
                 onClick={() => setFilterType('all')}
-                className={`text-[10px] px-2.5 py-1 rounded font-medium transition-colors ${filterType === 'all' ? 'bg-cyan-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                className={`text-[10px] px-2.5 py-1 rounded font-medium transition-colors ${filterType === 'all' ? 'bg-blue-600 text-white font-bold' : 'bg-slate-100 text-slate-600 hover:text-slate-900'}`}
               >
                 All
               </button>
               <button 
                 onClick={() => setFilterType('critical')}
-                className={`text-[10px] px-2.5 py-1 rounded font-medium transition-colors ${filterType === 'critical' ? 'bg-red-500 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                className={`text-[10px] px-2.5 py-1 rounded font-medium transition-colors ${filterType === 'critical' ? 'bg-red-600 text-white font-bold' : 'bg-slate-100 text-slate-600 hover:text-slate-900'}`}
               >
                 SOS (108/100)
               </button>
               <button 
                 onClick={() => setFilterType('civic')}
-                className={`text-[10px] px-2.5 py-1 rounded font-medium transition-colors ${filterType === 'civic' ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                className={`text-[10px] px-2.5 py-1 rounded font-medium transition-colors ${filterType === 'civic' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-100 text-slate-600 hover:text-slate-900'}`}
               >
                 Civic
               </button>
@@ -200,7 +203,7 @@ export default function DesktopCommandCenter() {
           </div>
 
           {/* Incidents Scrollable List */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-2">
+          <div className="flex-1 overflow-y-auto p-2 space-y-2 bg-slate-50">
             {incidents
               .filter(i => filterType === 'all' || (filterType === 'critical' ? i.priority === 'CRITICAL' : i.priority !== 'CRITICAL'))
               .map((inc) => (
@@ -210,39 +213,39 @@ export default function DesktopCommandCenter() {
                   className={`p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedIncident?.id === inc.id
                       ? inc.priority === 'CRITICAL'
-                        ? 'bg-red-950/40 border-red-500 shadow-md shadow-red-950'
-                        : 'bg-cyan-950/40 border-cyan-500 shadow-md shadow-cyan-950'
-                      : 'bg-[#0d1628]/60 border-slate-800/80 hover:border-slate-700'
+                        ? 'bg-red-50 border-red-400 ring-1 ring-red-400 shadow-sm'
+                        : 'bg-blue-50 border-blue-400 ring-1 ring-blue-400 shadow-sm'
+                      : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                      inc.priority === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                      inc.priority === 'CRITICAL' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
                     }`}>
                       {inc.priority}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-500">{inc.time}</span>
+                    <span className="text-[10px] font-mono text-slate-400">{inc.time}</span>
                   </div>
-                  <h4 className="text-xs font-bold text-slate-200 line-clamp-1">{inc.type}</h4>
-                  <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-slate-500 shrink-0" /> {inc.location}
+                  <h4 className="text-xs font-bold text-slate-900 line-clamp-1">{inc.type}</h4>
+                  <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-slate-400 shrink-0" /> {inc.location}
                   </p>
-                  <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
-                    <span className="text-cyan-400">{inc.id}</span>
-                    <span className="text-amber-400">{inc.slaExpiry}</span>
+                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-mono text-slate-500">
+                    <span className="text-blue-600 font-bold">{inc.id}</span>
+                    <span className="text-amber-600 font-bold">{inc.slaExpiry}</span>
                   </div>
                 </div>
               ))}
           </div>
 
           {/* Quick Dispatch Bottom Bar */}
-          <div className="p-3 bg-[#080d1a] border-t border-slate-800">
-            <div className="text-[10px] font-mono text-slate-400 mb-2 uppercase font-bold">One-Tap Emergency Directives</div>
+          <div className="p-3 bg-white border-t border-slate-200">
+            <div className="text-[10px] font-mono text-slate-500 mb-2 uppercase font-bold">One-Tap Directives</div>
             <div className="grid grid-cols-2 gap-2">
-              <button className="p-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-red-900/40">
+              <button className="p-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
                 <Phone className="w-3.5 h-3.5" /> 108 AMBULANCE
               </button>
-              <button className="p-2 rounded-lg bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-900/40">
+              <button className="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
                 <Shield className="w-3.5 h-3.5" /> 100 POLICE
               </button>
             </div>
@@ -250,19 +253,20 @@ export default function DesktopCommandCenter() {
         </div>
 
         {/* COLUMN 2: CENTER GIS FULL MAP & LIVE EVENT TICKER (flex-1) */}
-        <div className="flex-1 flex flex-col relative overflow-hidden bg-[#070b14]">
+        <div className="flex-1 flex flex-col relative overflow-hidden bg-slate-100">
+          
           {/* Top Bar for Map Controls */}
-          <div className="h-10 bg-[#0c1326]/90 border-b border-slate-800 px-4 flex items-center justify-between text-xs text-slate-300 z-10 shrink-0">
+          <div className="h-10 bg-white/95 border-b border-slate-200 px-4 flex items-center justify-between text-xs text-slate-700 z-10 shrink-0 shadow-xs">
             <div className="flex items-center gap-2">
-              <Globe className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="font-mono text-[11px] text-cyan-300 font-bold">GIS LAYERS:</span>
-              <span className="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Real-Time OpenStreetMap</span>
-              <span className="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Tamil Nadu District Mesh</span>
+              <Globe className="w-3.5 h-3.5 text-blue-600" />
+              <span className="font-mono text-[11px] text-blue-700 font-bold">GIS LAYERS:</span>
+              <span className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">Real-Time OpenStreetMap</span>
+              <span className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">Tamil Nadu District Mesh</span>
             </div>
             <div className="flex items-center gap-3 text-[11px] font-mono">
-              <span className="text-slate-400">Current Focus: <strong className="text-white">Chennai Metropolitan Area</strong></span>
-              <span className="text-slate-500">·</span>
-              <span className="text-slate-400">GPS Stream: <strong className="text-emerald-400">Active</strong></span>
+              <span className="text-slate-500">Focus: <strong className="text-slate-900">Chennai CMA</strong></span>
+              <span className="text-slate-300">·</span>
+              <span className="text-slate-500">GPS Stream: <strong className="text-emerald-600">Active</strong></span>
             </div>
           </div>
 
@@ -272,37 +276,38 @@ export default function DesktopCommandCenter() {
           </div>
 
           {/* Bottom Live Agent Event Ticker */}
-          <div className="h-10 bg-[#090e1c] border-t border-cyan-500/20 px-4 flex items-center justify-between text-xs shrink-0 font-mono z-10">
-            <div className="flex items-center gap-2 text-cyan-400">
+          <div className="h-10 bg-white border-t border-slate-200 px-4 flex items-center justify-between text-xs shrink-0 font-mono z-10 shadow-xs">
+            <div className="flex items-center gap-2 text-blue-700">
               <Sparkles className="w-3.5 h-3.5 animate-spin" />
               <span className="font-bold">AGENT STREAM:</span>
-              <span className="text-slate-300 text-[11px] truncate max-w-xl">
+              <span className="text-slate-700 text-[11px] truncate max-w-xl">
                 [Agent-03] Classified road cave-in on Velachery Bypass. Ward 178 ticket dispatched to GCC Engineer Portal. Auto-escalation scheduled in 48 hrs.
               </span>
             </div>
             <div className="flex items-center gap-2 text-[10px] text-slate-500">
               <span>n8n Webhook: 200 OK</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             </div>
           </div>
         </div>
 
         {/* COLUMN 3: RIGHT INCIDENT DETAIL & AGENT TELEMETRY (360px) */}
-        <div className="w-[360px] bg-[#0b1122] border-l border-slate-800 flex flex-col shrink-0">
+        <div className="w-[360px] bg-white border-l border-slate-200 flex flex-col shrink-0">
+          
           {/* Tab navigation */}
-          <div className="p-2 border-b border-slate-800 flex gap-1 bg-[#090e1c]">
+          <div className="p-2 border-b border-slate-200 flex gap-1 bg-slate-50">
             <button
               onClick={() => setActiveTab('detail')}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
-                activeTab === 'detail' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
+                activeTab === 'detail' ? 'bg-white text-blue-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Eye className="w-3.5 h-3.5" /> Incident Detail
+              <Eye className="w-3.5 h-3.5" /> Detail
             </button>
             <button
               onClick={() => setActiveTab('telemetry')}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
-                activeTab === 'telemetry' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
+                activeTab === 'telemetry' ? 'bg-white text-blue-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Activity className="w-3.5 h-3.5" /> Telemetry
@@ -310,7 +315,7 @@ export default function DesktopCommandCenter() {
             <button
               onClick={() => setActiveTab('n8n')}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
-                activeTab === 'n8n' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
+                activeTab === 'n8n' ? 'bg-white text-blue-700 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Terminal className="w-3.5 h-3.5" /> n8n Schema
@@ -318,69 +323,69 @@ export default function DesktopCommandCenter() {
           </div>
 
           {/* Tab Content Container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8FAFC]">
             {activeTab === 'detail' && selectedIncident && (
               <>
                 {/* Incident Photo with Live Geo Overlay */}
-                <div className="relative rounded-xl overflow-hidden border border-slate-700 aspect-video bg-slate-900">
+                <div className="relative rounded-2xl overflow-hidden border border-slate-200 aspect-video bg-slate-100 shadow-sm">
                   <img src={selectedIncident.image} alt="Incident" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none"></div>
                   
                   {/* Watermark GPS */}
-                  <div className="absolute bottom-2 left-2 right-2 bg-black/80 backdrop-blur text-[9px] font-mono text-cyan-300 px-2 py-1 rounded border border-cyan-500/30 flex justify-between items-center">
+                  <div className="absolute bottom-2 left-2 right-2 bg-slate-900/80 backdrop-blur text-[9px] font-mono text-cyan-300 px-2 py-1 rounded border border-cyan-500/30 flex justify-between items-center">
                     <span>LAT: {selectedIncident.lat.toFixed(4)}° N, LNG: {selectedIncident.lng.toFixed(4)}° E</span>
                     <span className="text-emerald-400 font-bold">CONF: {selectedIncident.confidence}</span>
                   </div>
                 </div>
 
                 {/* Details Card */}
-                <div className="p-3 rounded-xl bg-[#0d1628] border border-slate-800 space-y-2">
+                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white">{selectedIncident.type}</span>
+                    <span className="text-xs font-bold text-slate-900">{selectedIncident.type}</span>
                     <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
-                      selectedIncident.priority === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-cyan-500/20 text-cyan-300'
+                      selectedIncident.priority === 'CRITICAL' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
                     }`}>
                       {selectedIncident.status}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300">{selectedIncident.location}</p>
+                  <p className="text-xs text-slate-600">{selectedIncident.location}</p>
                 </div>
 
                 {/* Assigned Hospital / ETA or Department */}
-                <div className="p-3 rounded-xl bg-[#0d1628] border border-slate-800 space-y-2">
-                  <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">Autonomous Dispatch Breakdown</div>
+                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                  <div className="text-[10px] font-mono text-slate-500 uppercase font-bold">Autonomous Dispatch Breakdown</div>
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Assigned Routing:</span>
-                      <span className="text-cyan-300 font-bold">{selectedIncident.routingDept}</span>
+                      <span className="text-slate-500">Routing Dept:</span>
+                      <span className="text-blue-700 font-bold">{selectedIncident.routingDept}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Active Agent:</span>
-                      <span className="text-slate-200 font-mono">{selectedIncident.assignedAgent}</span>
+                      <span className="text-slate-500">Active Agent:</span>
+                      <span className="text-slate-800 font-mono font-semibold">{selectedIncident.assignedAgent}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Calculated ETA / SLA:</span>
-                      <span className="text-emerald-400 font-bold">{selectedIncident.eta}</span>
+                      <span className="text-slate-500">Calculated SLA / ETA:</span>
+                      <span className="text-emerald-700 font-bold">{selectedIncident.eta}</span>
                     </div>
                     {selectedIncident.hospital !== 'N/A' && (
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Nearest Trauma Center:</span>
-                        <span className="text-rose-400">{selectedIncident.hospital}</span>
+                        <span className="text-slate-500">Nearest Trauma Center:</span>
+                        <span className="text-red-600 font-semibold">{selectedIncident.hospital}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* SLA Auto-Retry Countdown */}
-                <div className="p-3 rounded-xl bg-gradient-to-r from-amber-950/30 to-slate-900 border border-amber-500/30">
-                  <div className="flex items-center gap-2 text-amber-400 text-xs font-bold">
-                    <Clock className="w-4 h-4" />
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1 shadow-sm">
+                  <div className="flex items-center gap-2 font-bold">
+                    <Clock className="w-4 h-4 text-amber-600" />
                     <span>Auto-Escalation Countdown</span>
                   </div>
-                  <p className="text-sm font-mono font-black text-amber-300 mt-1">
+                  <p className="text-sm font-mono font-black text-amber-700">
                     {selectedIncident.slaExpiry}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-1">
+                  <p className="text-[10px] text-amber-800 mt-1">
                     If unacknowledged by ward supervisor, auto-escalates to Tamil Nadu Principal Secretary Municipal Admin.
                   </p>
                 </div>
@@ -389,32 +394,32 @@ export default function DesktopCommandCenter() {
 
             {activeTab === 'telemetry' && (
               <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-[#0d1628] border border-cyan-500/30">
-                  <span className="text-[10px] font-mono text-cyan-400 uppercase">Agent-01 (Triage)</span>
+                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <span className="text-[10px] font-mono text-blue-700 uppercase font-bold">Agent-01 (Triage)</span>
                   <div className="flex items-baseline justify-between mt-1">
-                    <span className="text-xl font-bold font-mono text-white">99.82%</span>
-                    <span className="text-[10px] text-emerald-400 font-mono">14,281 inferences</span>
+                    <span className="text-xl font-bold font-mono text-slate-900">99.82%</span>
+                    <span className="text-[10px] text-emerald-700 font-mono font-semibold">14,281 inferences</span>
                   </div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#0d1628] border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase">Mean Time to Dispatch (MTTD)</span>
+                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <span className="text-[10px] font-mono text-slate-500 uppercase font-bold">Mean Time to Dispatch</span>
                   <div className="flex items-baseline justify-between mt-1">
-                    <span className="text-xl font-bold font-mono text-cyan-300">18.4 sec</span>
-                    <span className="text-[10px] text-emerald-400 font-mono">-72% vs manual</span>
+                    <span className="text-xl font-bold font-mono text-blue-700">18.4 sec</span>
+                    <span className="text-[10px] text-emerald-700 font-mono font-semibold">-72% vs manual</span>
                   </div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#0d1628] border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase">API Ingestion Rate</span>
+                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <span className="text-[10px] font-mono text-slate-500 uppercase font-bold">API Ingestion Rate</span>
                   <div className="flex items-baseline justify-between mt-1">
-                    <span className="text-xl font-bold font-mono text-emerald-300">842 req/min</span>
-                    <span className="text-[10px] text-cyan-400 font-mono">Zero drop</span>
+                    <span className="text-xl font-bold font-mono text-emerald-700">842 req/min</span>
+                    <span className="text-[10px] text-blue-700 font-mono font-semibold">Zero drop</span>
                   </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'n8n' && (
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[10px] text-emerald-400 space-y-1 overflow-x-auto">
+              <div className="p-3.5 rounded-2xl bg-slate-900 text-emerald-400 font-mono text-[10px] space-y-1 overflow-x-auto shadow-sm">
                 <div>// SENTINEXA n8n ORCHESTRATION PAYLOAD</div>
                 <div>{`{`}</div>
                 <div className="pl-3">"event": "INCIDENT_CLASSIFIED",</div>

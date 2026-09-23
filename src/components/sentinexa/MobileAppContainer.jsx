@@ -30,9 +30,21 @@ export default function MobileAppContainer({ isStandAlone = false }) {
     return () => clearInterval(interval);
   }, []);
 
-  const handleCaptureComplete = (data) => {
+  const handleCaptureComplete = (arg1, arg2) => {
+    // Support both (mode, data) and (data)
+    let mode = 'complaint';
+    let data = null;
+
+    if (typeof arg1 === 'string') {
+      mode = arg1;
+      data = arg2;
+    } else if (typeof arg1 === 'object') {
+      data = arg1;
+      mode = arg1.mode || 'complaint';
+    }
+
     setCapturedData(data);
-    if (data.mode === 'emergency') {
+    if (mode === 'emergency') {
       setActiveScreen('emergency');
     } else {
       setActiveScreen('complaint');
@@ -55,22 +67,27 @@ export default function MobileAppContainer({ isStandAlone = false }) {
           <Screen2GeoCamCapture 
             onClose={() => setActiveScreen('home')}
             onCapture={handleCaptureComplete}
+            onProceedToFlow={handleCaptureComplete}
           />
         );
       case 'emergency':
         return (
           <Screen3AEmergencyFlow 
+            photoData={capturedData}
             capturedData={capturedData}
             onBack={() => setActiveScreen('home')}
-            onDispatched={(ticket) => setActiveScreen('tickets')}
+            onComplete={() => setActiveScreen('tickets')}
+            onDispatched={() => setActiveScreen('tickets')}
           />
         );
       case 'complaint':
         return (
           <Screen3BComplaintFlow 
+            photoData={capturedData}
             capturedData={capturedData}
             onBack={() => setActiveScreen('home')}
-            onSubmitSuccess={(ticket) => setActiveScreen('tickets')}
+            onComplete={() => setActiveScreen('tickets')}
+            onSubmitSuccess={() => setActiveScreen('tickets')}
           />
         );
       case 'map':
@@ -82,7 +99,7 @@ export default function MobileAppContainer({ isStandAlone = false }) {
       case 'settings':
         return <Screen7ProfileSettings onBack={() => setActiveScreen('home')} />;
       default:
-        return <Screen1HomeDashboard onNavigate={setActiveScreen} />;
+        return <Screen1HomeDashboard onNavigate={setActiveScreen} onOpenGeoCam={() => setActiveScreen('geocam')} />;
     }
   };
 
@@ -91,64 +108,66 @@ export default function MobileAppContainer({ isStandAlone = false }) {
 
   return (
     <div className="w-full flex justify-center items-center">
-      {/* Mobile Phone Mockup Frame */}
-      <div className={`relative w-[375px] h-[812px] max-h-[85vh] bg-[#070b14] rounded-[42px] border-[6px] border-slate-700/80 shadow-[0_25px_70px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col font-sans select-none ring-1 ring-white/10 ${
+      {/* Mobile Phone Mockup Frame - Light Platinum Aesthetic */}
+      <div className={`relative w-[375px] h-[812px] max-h-[85vh] bg-[#F8FAFC] rounded-[44px] border-[8px] border-slate-300 shadow-[0_20px_60px_rgba(15,23,42,0.18)] overflow-hidden flex flex-col font-sans select-none ring-1 ring-slate-200 ${
         isStandAlone ? 'max-h-screen' : ''
       }`}>
         
-        {/* iOS Dynamic Island & Status Bar */}
-        <div className="h-10 bg-black/90 backdrop-blur-md px-6 flex items-center justify-between text-[11px] font-semibold text-white/90 shrink-0 z-50">
+        {/* iOS Dynamic Island & Status Bar - Light Mode */}
+        <div className="h-10 bg-white/95 backdrop-blur-md px-6 flex items-center justify-between text-[11px] font-bold text-slate-800 shrink-0 z-50 border-b border-slate-100">
           <span>{currentTime}</span>
-          {/* Dynamic Pill */}
-          <div className="w-24 h-4 bg-black rounded-full border border-slate-800 flex items-center justify-center gap-1.5 px-2">
+          
+          {/* Dynamic Island Pill */}
+          <div className="w-24 h-4.5 bg-slate-900 rounded-full flex items-center justify-center gap-1.5 px-2 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-[9px] font-mono text-cyan-400">SENTINEXA</span>
+            <span className="text-[9px] font-mono text-cyan-300 font-bold">SENTINEXA</span>
           </div>
-          <div className="flex items-center gap-1.5 text-slate-300">
-            <span className="text-[9px] font-mono text-emerald-400">5G</span>
-            <Wifi className="w-3 h-3 text-cyan-400" />
-            <Battery className="w-3.5 h-3.5 text-slate-300" />
+
+          <div className="flex items-center gap-1.5 text-slate-700">
+            <span className="text-[9px] font-mono text-blue-600 font-bold">5G</span>
+            <Wifi className="w-3 h-3 text-slate-700" />
+            <Battery className="w-3.5 h-3.5 text-slate-700" />
           </div>
         </div>
 
         {/* Screen Content Viewport */}
-        <div className="flex-1 overflow-hidden relative bg-[#0a0f1d]">
+        <div className="flex-1 overflow-hidden relative bg-[#F8FAFC]">
           {renderScreen()}
         </div>
 
-        {/* Bottom Navigation Bar */}
+        {/* Bottom Navigation Bar - Clean Light UI */}
         {!hideBottomNav && (
-          <div className="h-16 bg-[#090d19]/95 backdrop-blur border-t border-cyan-500/20 px-3 flex items-center justify-around shrink-0 z-40">
+          <div className="h-16 bg-white/95 backdrop-blur border-t border-slate-200 px-3 flex items-center justify-around shrink-0 z-40 shadow-sm">
             {/* Home */}
             <button
               onClick={() => setActiveScreen('home')}
               className={`flex flex-col items-center gap-0.5 transition-all ${
-                activeScreen === 'home' ? 'text-cyan-400 scale-105' : 'text-slate-400 hover:text-slate-200'
+                activeScreen === 'home' ? 'text-blue-600 font-bold scale-105' : 'text-slate-600 hover:text-slate-800'
               }`}
             >
               <Home className="w-5 h-5" />
-              <span className="text-[9px] font-medium tracking-tight">Home</span>
+              <span className="text-[9px] tracking-tight">Home</span>
             </button>
 
             {/* GIS Map */}
             <button
               onClick={() => setActiveScreen('map')}
               className={`flex flex-col items-center gap-0.5 transition-all ${
-                activeScreen === 'map' ? 'text-cyan-400 scale-105' : 'text-slate-400 hover:text-slate-200'
+                activeScreen === 'map' ? 'text-blue-600 font-bold scale-105' : 'text-slate-600 hover:text-slate-800'
               }`}
             >
               <MapPin className="w-5 h-5" />
-              <span className="text-[9px] font-medium tracking-tight">GIS Map</span>
+              <span className="text-[9px] tracking-tight">GIS Map</span>
             </button>
 
             {/* Elevated Geo-Cam Shutter Button */}
             <button
               onClick={() => setActiveScreen('geocam')}
-              className="relative -top-4 w-13 h-13 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 border-4 border-[#070b14] flex items-center justify-center text-white shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:scale-105 active:scale-95 transition-transform"
+              className="relative -top-4 w-13 h-13 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 border-4 border-white flex items-center justify-center text-white shadow-[0_4px_16px_rgba(37,99,235,0.4)] hover:scale-105 active:scale-95 transition-transform"
               title="Geo Camera"
             >
               <Camera className="w-6 h-6 text-white" />
-              <span className="absolute -bottom-5 text-[9px] font-bold text-cyan-400 uppercase tracking-tighter">
+              <span className="absolute -bottom-5 text-[9px] font-black text-blue-600 uppercase tracking-tighter">
                 Geo-Cam
               </span>
             </button>
@@ -157,40 +176,40 @@ export default function MobileAppContainer({ isStandAlone = false }) {
             <button
               onClick={() => setActiveScreen('tickets')}
               className={`flex flex-col items-center gap-0.5 transition-all ${
-                activeScreen === 'tickets' ? 'text-cyan-400 scale-105' : 'text-slate-400 hover:text-slate-200'
+                activeScreen === 'tickets' ? 'text-blue-600 font-bold scale-105' : 'text-slate-600 hover:text-slate-800'
               }`}
             >
               <ClipboardList className="w-5 h-5" />
-              <span className="text-[9px] font-medium tracking-tight">Tickets</span>
+              <span className="text-[9px] tracking-tight">Tickets</span>
             </button>
 
             {/* Telemetry / Agent */}
             <button
               onClick={() => setActiveScreen('telemetry')}
               className={`flex flex-col items-center gap-0.5 transition-all ${
-                activeScreen === 'telemetry' ? 'text-cyan-400 scale-105' : 'text-slate-400 hover:text-slate-200'
+                activeScreen === 'telemetry' ? 'text-blue-600 font-bold scale-105' : 'text-slate-600 hover:text-slate-800'
               }`}
             >
               <Activity className="w-5 h-5" />
-              <span className="text-[9px] font-medium tracking-tight">Agents</span>
+              <span className="text-[9px] tracking-tight">Agents</span>
             </button>
 
             {/* Settings */}
             <button
               onClick={() => setActiveScreen('settings')}
               className={`flex flex-col items-center gap-0.5 transition-all ${
-                activeScreen === 'settings' ? 'text-cyan-400 scale-105' : 'text-slate-400 hover:text-slate-200'
+                activeScreen === 'settings' ? 'text-blue-600 font-bold scale-105' : 'text-slate-600 hover:text-slate-800'
               }`}
             >
               <Settings className="w-5 h-5" />
-              <span className="text-[9px] font-medium tracking-tight">Config</span>
+              <span className="text-[9px] tracking-tight">Config</span>
             </button>
           </div>
         )}
 
         {/* Home Indicator bar */}
-        <div className="h-4 bg-[#070b14] flex justify-center items-center shrink-0">
-          <div className="w-32 h-1 bg-slate-600/70 rounded-full"></div>
+        <div className="h-4 bg-white flex justify-center items-center shrink-0">
+          <div className="w-32 h-1 bg-slate-300 rounded-full"></div>
         </div>
       </div>
     </div>

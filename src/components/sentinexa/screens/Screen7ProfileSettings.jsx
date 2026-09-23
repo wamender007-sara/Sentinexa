@@ -60,163 +60,165 @@ export default function Screen7ProfileSettings({ onBack }) {
   const cur = t[lang];
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0f1d] text-white overflow-y-auto">
+    <div className="flex flex-col h-full bg-[#F8FAFC] text-slate-800 font-sans overflow-y-auto select-none">
+      
       {/* Top Header */}
-      <div className="p-4 border-b border-cyan-500/20 bg-[#0d1628]/80 backdrop-blur sticky top-0 z-20 flex items-center justify-between">
+      <div className="p-4 border-b border-slate-200 bg-white sticky top-0 z-20 flex items-center justify-between shadow-sm">
         <div>
-          <h2 className="text-base font-bold text-white tracking-wide flex items-center gap-2">
-            <Shield className="w-5 h-5 text-cyan-400" />
+          <h2 className="text-base font-extrabold text-slate-900 tracking-wide flex items-center gap-2">
+            <Shield className="w-5 h-5 text-blue-600" />
             {cur.title}
           </h2>
-          <p className="text-[11px] text-slate-400 font-mono">{cur.subtitle}</p>
+          <p className="text-[11px] text-slate-500 font-mono">{cur.subtitle}</p>
         </div>
         <button 
           onClick={onBack}
-          className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700"
+          className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 font-bold transition-colors"
         >
           Done
         </button>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-4 pb-20">
+        
         {/* Civic Scout Badge Card */}
-        <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950/40 via-blue-900/30 to-purple-950/40 border border-cyan-500/30 shadow-lg">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-              <Award className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 text-white">
+              <Award className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm text-cyan-200">{cur.profileBadge}</span>
-                <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/40 font-mono">
+                <span className="font-bold text-sm text-slate-900">{cur.profileBadge}</span>
+                <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-mono font-bold">
                   Trust 98.4%
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-0.5">{cur.level}</p>
-              <div className="w-48 bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                <div className="bg-gradient-to-r from-cyan-400 to-emerald-400 h-full w-[85%] rounded-full"></div>
+              <p className="text-xs text-slate-500 mt-0.5">{cur.level}</p>
+              <div className="w-48 bg-slate-100 h-2 rounded-full mt-2 overflow-hidden border border-slate-200">
+                <div className="bg-gradient-to-r from-blue-600 to-emerald-500 h-full w-[85%] rounded-full"></div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Language Switcher EN / TA */}
-        <div className="p-4 rounded-xl bg-[#0d1628] border border-slate-800">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-cyan-400" />
+              <Globe className="w-4 h-4 text-blue-600" />
               <div>
-                <h3 className="text-xs font-bold text-slate-200">{cur.langTitle}</h3>
-                <p className="text-[10px] text-slate-400">{cur.langSub}</p>
+                <h3 className="text-xs font-bold text-slate-900">{cur.langTitle}</h3>
+                <p className="text-[10px] text-slate-500">{cur.langSub}</p>
               </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setLang('en')}
-              className={`p-3 rounded-lg border text-left flex items-center justify-between transition-all ${
+              className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
                 lang === 'en'
-                  ? 'bg-cyan-950/50 border-cyan-500/60 text-cyan-200 shadow-md shadow-cyan-950'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                  ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-xs'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300'
               }`}
             >
               <div>
                 <p className="text-xs font-bold">English (UK/IN)</p>
-                <p className="text-[10px] opacity-70">Primary Gov Format</p>
+                <p className="text-[10px] text-slate-500">Standard Gov Format</p>
               </div>
-              {lang === 'en' && <CheckCircle className="w-4 h-4 text-cyan-400" />}
+              {lang === 'en' && <CheckCircle className="w-4 h-4 text-blue-600" />}
             </button>
             <button
               onClick={() => setLang('ta')}
-              className={`p-3 rounded-lg border text-left flex items-center justify-between transition-all ${
+              className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
                 lang === 'ta'
-                  ? 'bg-cyan-950/50 border-cyan-500/60 text-cyan-200 shadow-md shadow-cyan-950'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                  ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-xs'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300'
               }`}
             >
               <div>
                 <p className="text-xs font-bold">தமிழ் (Tamil)</p>
-                <p className="text-[10px] opacity-70">தமிழ்நாடு அரசு வடிவம்</p>
+                <p className="text-[10px] text-slate-500">தமிழ்நாடு அரசு வடிவம்</p>
               </div>
-              {lang === 'ta' && <CheckCircle className="w-4 h-4 text-cyan-400" />}
+              {lang === 'ta' && <CheckCircle className="w-4 h-4 text-blue-600" />}
             </button>
           </div>
         </div>
 
         {/* n8n Connected Agent Infrastructure Status */}
-        <div className="p-4 rounded-xl bg-[#0d1628] border border-cyan-500/30">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-orange-500/20 border border-orange-500/40 flex items-center justify-center">
-                <Cpu className="w-5 h-5 text-orange-400" />
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+                <Cpu className="w-5 h-5 text-amber-600" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-200">{cur.n8nTitle}</span>
-                  <span className="flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 font-mono">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span className="text-xs font-bold text-slate-900">{cur.n8nTitle}</span>
+                  <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200 font-mono font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     Live
                   </span>
                 </div>
-                <p className="text-[10px] text-emerald-400 font-mono mt-0.5">{cur.n8nStatus}</p>
-                <p className="text-[9px] text-slate-500 font-mono">{cur.n8nLatency} · TLS 1.3 · HMAC Verified</p>
+                <p className="text-[11px] text-emerald-700 font-mono font-semibold mt-0.5">{cur.n8nStatus}</p>
+                <p className="text-[10px] text-slate-400 font-mono">{cur.n8nLatency} · TLS 1.3 · HMAC Verified</p>
               </div>
             </div>
-            <RefreshCw className="w-4 h-4 text-slate-500 hover:text-cyan-400 cursor-pointer" />
+            <RefreshCw className="w-4 h-4 text-slate-400 hover:text-blue-600 cursor-pointer" />
           </div>
         </div>
 
         {/* Notification Preferences */}
-        <div className="p-4 rounded-xl bg-[#0d1628] border border-slate-800 space-y-3">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
           <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-xs font-bold text-slate-200">{cur.notifTitle}</h3>
+            <Bell className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-slate-900">{cur.notifTitle}</h3>
           </div>
 
           <div className="space-y-2.5">
-            <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
-              <span className="text-xs text-slate-300">{cur.notifEmergency}</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-xs text-slate-700">{cur.notifEmergency}</span>
               <input 
                 type="checkbox" 
                 checked={notifs.emergencyOnly} 
                 onChange={() => setNotifs({...notifs, emergencyOnly: !notifs.emergencyOnly})}
-                className="w-4 h-4 accent-cyan-500 rounded cursor-pointer"
+                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
               />
             </div>
-            <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
-              <span className="text-xs text-slate-300">{cur.notifCivic}</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-xs text-slate-700">{cur.notifCivic}</span>
               <input 
                 type="checkbox" 
                 checked={notifs.allCivic} 
                 onChange={() => setNotifs({...notifs, allCivic: !notifs.allCivic})}
-                className="w-4 h-4 accent-cyan-500 rounded cursor-pointer"
+                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
               />
             </div>
-            <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
-              <span className="text-xs text-slate-300">{cur.notifAudit}</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-xs text-slate-700">{cur.notifAudit}</span>
               <input 
                 type="checkbox" 
                 checked={notifs.agentAudit} 
                 onChange={() => setNotifs({...notifs, agentAudit: !notifs.agentAudit})}
-                className="w-4 h-4 accent-cyan-500 rounded cursor-pointer"
+                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
               />
             </div>
           </div>
         </div>
 
         {/* Resilient Offline Mode */}
-        <div className="p-4 rounded-xl bg-[#0d1628] border border-slate-800 flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-cyan-400" />
-              <h3 className="text-xs font-bold text-slate-200">{cur.offlineTitle}</h3>
+              <Smartphone className="w-4 h-4 text-blue-600" />
+              <h3 className="text-xs font-bold text-slate-900">{cur.offlineTitle}</h3>
             </div>
-            <p className="text-[10px] text-slate-400 mt-0.5">{cur.offlineSub}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{cur.offlineSub}</p>
           </div>
           <button
             onClick={() => setOfflineSync(!offlineSync)}
             className={`w-11 h-6 flex items-center rounded-full p-1 duration-200 cursor-pointer ${
-              offlineSync ? 'bg-cyan-500 justify-end' : 'bg-slate-700 justify-start'
+              offlineSync ? 'bg-blue-600 justify-end' : 'bg-slate-300 justify-start'
             }`}
           >
             <div className="w-4 h-4 bg-white rounded-full shadow-md"></div>
@@ -224,25 +226,25 @@ export default function Screen7ProfileSettings({ onBack }) {
         </div>
 
         {/* Quick Emergency SOS Cards */}
-        <div className="p-4 rounded-xl bg-red-950/20 border border-red-500/30">
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-200">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
-            <h3 className="text-xs font-bold text-red-300">{cur.emergencyContacts}</h3>
+            <AlertTriangle className="w-4 h-4 text-red-600" />
+            <h3 className="text-xs font-bold text-red-900">{cur.emergencyContacts}</h3>
           </div>
-          <div className="space-y-1.5 text-xs text-slate-300">
-            <div className="flex justify-between items-center py-1 border-b border-red-500/10">
+          <div className="space-y-1.5 text-xs text-slate-700">
+            <div className="flex justify-between items-center py-1 border-b border-red-100">
               <span>{cur.primaryContact}</span>
-              <a href="tel:100" className="text-red-400 font-mono font-bold hover:underline">CALL 100</a>
+              <a href="tel:100" className="text-red-600 font-mono font-bold hover:underline">CALL 100</a>
             </div>
             <div className="flex justify-between items-center py-1">
               <span>{cur.secondaryContact}</span>
-              <a href="tel:108" className="text-red-400 font-mono font-bold hover:underline">CALL 108</a>
+              <a href="tel:108" className="text-red-600 font-mono font-bold hover:underline">CALL 108</a>
             </div>
           </div>
         </div>
 
-        <div className="text-center pb-4 text-[10px] font-mono text-slate-600">
-          SENTINEXA MOBILE AGENT OS · BUILD 2026.09.23 · TAMIL NADU MESH
+        <div className="text-center pb-4 text-[10px] font-mono text-slate-400">
+          SENTINEXA MOBILE AGENT OS · BUILD 2026.09.23 · LIGHT EDITION
         </div>
       </div>
     </div>
