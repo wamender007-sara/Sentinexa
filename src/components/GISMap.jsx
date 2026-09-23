@@ -212,139 +212,86 @@ export default function GISMap({ onSelectTicket }) {
   return (
     <div className="relative w-full h-full min-h-[450px] flex-1 overflow-hidden bg-[#F1F5F9] flex flex-col font-sans">
       
-      {/* Top Map Control Bar */}
-      <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+      {/* Ultra-Simple, Clean Floating Map Controls */}
+      <div className="absolute top-2.5 left-2.5 right-2.5 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
         
-        {/* Left Controls: Map Layer, Category Filters, Verified Toggle */}
-        <div className="pointer-events-auto bg-white border border-[#D9E2EC] p-1.5 rounded-2xl shadow-md flex flex-wrap items-center gap-2">
-          
-          {/* Map Layer Selector */}
-          <div className="flex bg-[#F1F5F9] p-0.5 rounded-xl border border-[#D9E2EC] text-xs font-semibold">
-            <button
-              onClick={() => setMapType('standard')}
-              className={`px-2.5 py-1 rounded-lg transition-colors ${mapType === 'standard' ? 'bg-white text-[#0B2E59] shadow-xs font-bold' : 'text-[#52616B]'}`}
-            >
-              Standard
-            </button>
-            <button
-              onClick={() => setMapType('satellite')}
-              className={`px-2.5 py-1 rounded-lg transition-colors ${mapType === 'satellite' ? 'bg-white text-[#0B2E59] shadow-xs font-bold' : 'text-[#52616B]'}`}
-            >
-              Satellite
-            </button>
-            <button
-              onClick={() => setMapType('terrain')}
-              className={`px-2.5 py-1 rounded-lg transition-colors ${mapType === 'terrain' ? 'bg-white text-[#0B2E59] shadow-xs font-bold' : 'text-[#52616B]'}`}
-            >
-              Terrain
-            </button>
-          </div>
-
-          <div className="h-4 w-px bg-[#D9E2EC]"></div>
-
-          {/* Category Filter Buttons with Count Badges */}
-          <div className="flex items-center space-x-1 text-xs font-semibold">
-            <button
-              onClick={() => setCategoryFilter('all')}
-              className={`px-2.5 py-1 rounded-xl uppercase font-bold text-[11px] transition-colors flex items-center space-x-1 ${
-                categoryFilter === 'all'
-                  ? 'bg-[#0B2E59] text-white shadow-xs'
-                  : 'bg-[#F1F5F9] text-[#52616B] hover:text-[#14213D]'
-              }`}
-            >
-              <span>ALL</span>
-              <span className="opacity-80">({incidents.length})</span>
-            </button>
-
-            <button
-              onClick={() => setCategoryFilter('EMERGENCY')}
-              className={`px-2.5 py-1 rounded-xl uppercase font-bold text-[11px] transition-colors flex items-center space-x-1 ${
-                categoryFilter === 'EMERGENCY'
-                  ? 'bg-[#C62828] text-white shadow-xs'
-                  : 'bg-[#FFF0F0] text-[#C62828] hover:bg-[#C62828] hover:text-white'
-              }`}
-            >
-              <span>EMERGENCY</span>
-              <span className="opacity-80">({emergencyCount})</span>
-            </button>
-
-            <button
-              onClick={() => setCategoryFilter('CIVIC')}
-              className={`px-2.5 py-1 rounded-xl uppercase font-bold text-[11px] transition-colors flex items-center space-x-1 ${
-                categoryFilter === 'CIVIC'
-                  ? 'bg-[#C97700] text-white shadow-xs'
-                  : 'bg-[#FFF5DF] text-[#C97700] hover:bg-[#C97700] hover:text-white'
-              }`}
-            >
-              <span>CIVIC</span>
-              <span className="opacity-80">({civicCount})</span>
-            </button>
-
-            <button
-              onClick={() => setCategoryFilter('WEATHER')}
-              className={`px-2.5 py-1 rounded-xl uppercase font-bold text-[11px] transition-colors flex items-center space-x-1 ${
-                categoryFilter === 'WEATHER'
-                  ? 'bg-[#0EA5C6] text-white shadow-xs'
-                  : 'bg-[#E0F2FE] text-[#0EA5C6] hover:bg-[#0EA5C6] hover:text-white'
-              }`}
-            >
-              <span>WEATHER</span>
-              <span className="opacity-80">({weatherCount})</span>
-            </button>
-          </div>
-
-          <div className="h-4 w-px bg-[#D9E2EC] hidden sm:block"></div>
-
-          {/* Verified Only Toggle */}
-          <label className="hidden sm:flex items-center space-x-1.5 text-xs font-semibold text-[#14213D] cursor-pointer px-2 py-1 bg-[#F1F5F9] rounded-xl border border-[#D9E2EC]">
-            <input
-              type="checkbox"
-              checked={verifiedOnly}
-              onChange={(e) => setVerifiedOnly(e.target.checked)}
-              className="rounded border-[#D9E2EC] text-[#1769E0]"
-            />
-            <span className="text-[11px]">Verified only</span>
-          </label>
+        {/* Left: Prominent Map Mode Toggle (Standard vs Satellite) */}
+        <div className="pointer-events-auto bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200 shadow-md flex items-center space-x-1">
+          <button
+            type="button"
+            onClick={() => setMapType('standard')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              mapType === 'standard'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 bg-slate-50'
+            }`}
+          >
+            <span>🗺️ Map</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapType('satellite')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              mapType === 'satellite'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 bg-slate-50'
+            }`}
+          >
+            <span>🛰️ Satellite</span>
+          </button>
         </div>
 
-        {/* Right Controls: Search Field & Reset */}
-        <div className="pointer-events-auto flex items-center space-x-2">
-          
-          <div className="relative bg-white border border-[#D9E2EC] rounded-2xl shadow-md overflow-hidden flex items-center px-3 py-1.5 w-44 sm:w-60">
-            <Search className="w-3.5 h-3.5 text-[#52616B] mr-2 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search incidents or street..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs text-[#14213D] placeholder-[#94A3B8] focus:outline-none bg-transparent"
-            />
+        {/* Right: Clean Incident Filter Chips & Reset */}
+        <div className="pointer-events-auto flex items-center space-x-1.5">
+          <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200 shadow-md flex items-center space-x-1">
+            <button
+              type="button"
+              onClick={() => setCategoryFilter('all')}
+              className={`px-2.5 py-1.2 rounded-xl text-xs font-bold transition-colors ${
+                categoryFilter === 'all'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              All ({incidents.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setCategoryFilter('EMERGENCY')}
+              className={`px-2.5 py-1.2 rounded-xl text-xs font-bold transition-colors ${
+                categoryFilter === 'EMERGENCY'
+                  ? 'bg-red-600 text-white shadow-xs'
+                  : 'bg-red-50 text-red-600 hover:bg-red-100'
+              }`}
+            >
+              🚨 SOS ({emergencyCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setCategoryFilter('CIVIC')}
+              className={`px-2.5 py-1.2 rounded-xl text-xs font-bold transition-colors ${
+                categoryFilter === 'CIVIC'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+              }`}
+            >
+              📋 Civic ({civicCount})
+            </button>
           </div>
 
-          {/* Geo-Cam Shutter Button on Map */}
           <button
-            onClick={openGeoCam}
-            className="px-3 py-1.5 rounded-2xl bg-[#0B2E59] hover:bg-[#14213D] text-white text-xs font-bold shadow-md flex items-center space-x-1.5 transition-all active:scale-95 shrink-0"
-            title="Open Geo-Cam with live GPS Latitude & Longitude stamp"
-          >
-            <Camera className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Geo-Cam</span>
-          </button>
-
-          <button
+            type="button"
             onClick={() => {
               setMapCenter([13.0827, 80.2707], 12);
               setCategoryFilter('all');
-              setVerifiedOnly(false);
-              setSearchQuery('');
             }}
-            className="p-2 rounded-2xl bg-white border border-[#D9E2EC] text-[#52616B] hover:text-[#14213D] shadow-md transition-colors"
-            title="Reset Map to Chennai View"
+            className="p-2 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 text-slate-600 hover:text-slate-900 shadow-md transition-colors"
+            title="Reset to Chennai"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
-
         </div>
+
       </div>
 
       {/* Zero Incidents Match Notification Banner */}
