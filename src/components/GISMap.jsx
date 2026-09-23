@@ -118,15 +118,15 @@ export default function GISMap({ onSelectTicket }) {
 
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Tile layer URL based on map type
+  // Tile layer URL based on map type (watermark-free live tile providers)
   const getTileUrl = () => {
     if (mapType === 'satellite') {
       return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
     } else if (mapType === 'terrain') {
-      return 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
+      return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}';
     }
-    // Standard clean light tile
-    return 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    // Official OpenStreetMap live street tiles (100% watermark-free)
+    return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
   };
 
   // Filtering incidents
