@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F7F9FC;
+    color: #14213D;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+}
+
+/* Light Mode Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Leaflet Custom Map Light Theme Styling */
+.leaflet-container {
+  background-color: #F7F9FC !important;
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: #FFFFFF !important;
+  color: #14213D !important;
+  border: 1px solid #D9E2EC;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 25px -5px rgba(11, 46, 89, 0.12), 0 8px 10px -6px rgba(11, 46, 89, 0.08);
+}
+
+.leaflet-popup-tip {
+  background-color: #FFFFFF !important;
+}
+
+/* Pulse animation for active emergency map markers */
+@keyframes pulse-ring-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.6);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 14px rgba(198, 40, 40, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(198, 40, 40, 0);
+  }
+}
+
+.marker-pulse-emergency {
+  animation: pulse-ring-red 1.8s infinite;
+}
