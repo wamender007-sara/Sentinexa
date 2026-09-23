@@ -82,7 +82,7 @@ export default function DesktopCommandCenter() {
       routingDept: 'CMWSSB (Metro Water & Sewerage)',
       assignedAgent: 'Agent-02 (Computer Vision)',
       slaExpiry: '22h remaining',
-      image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?w=600&auto=format&fit=crop&q=80'
+      image: 'https://images.unsplash.com/photo-1547683905-f686c993aae5?w=600&auto=format&fit=crop&q=80'
     },
     {
       id: 'TN-SOS-9039',
@@ -100,7 +100,7 @@ export default function DesktopCommandCenter() {
       routingDept: 'TANGEDCO & 101 Fire Control',
       assignedAgent: 'Agent-03 (Geo-Spatial)',
       slaExpiry: 'Resolved',
-      image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop&q=80'
+      image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&auto=format&fit=crop&q=80'
     }
   ];
 

@@ -47,7 +47,7 @@ export default function CitizenReportModal() {
       createdAt: new Date().toISOString(),
       unacknowledgedDays: 0,
       retryCount: 0,
-      imageUri: photoUri || 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=60'
+      imageUri: photoUri || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=60'
     };
 
     addIncident(newInc);

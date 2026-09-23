@@ -247,7 +247,7 @@ export default function GeoCamModal() {
 
   const handleSelectEmergency = () => {
     const photoData = {
-      imageUri: capturedImage || 'https://images.unsplash.com/photo-1587740896339-96a76170508d?w=800&auto=format&fit=crop&q=80',
+      imageUri: capturedImage || 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&auto=format&fit=crop&q=80',
       ...location
     };
     closeGeoCam();
@@ -256,7 +256,7 @@ export default function GeoCamModal() {
 
   const handleSelectComplaint = () => {
     const photoData = {
-      imageUri: capturedImage || 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80',
+      imageUri: capturedImage || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop&q=80',
       ...location
     };
     closeGeoCam();

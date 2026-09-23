@@ -69,7 +69,7 @@ export default function ComplaintModal() {
       createdAt: new Date().toISOString(),
       unacknowledgedDays: 0,
       retryCount: 0,
-      imageUri: capturedGeoPhoto?.imageUri || 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=60'
+      imageUri: capturedGeoPhoto?.imageUri || 'https://images.unsplash.com/photo-1547683905-f686c993aae5?w=600&auto=format&fit=crop&q=60'
     };
 
     addIncident(newTicket);

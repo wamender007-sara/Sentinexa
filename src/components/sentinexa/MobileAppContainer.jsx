@@ -161,16 +161,19 @@ export default function MobileAppContainer({ isStandAlone = false }) {
             </button>
 
             {/* Elevated Geo-Cam Shutter Button */}
-            <button
-              onClick={() => setActiveScreen('geocam')}
-              className="relative -top-4 w-13 h-13 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 border-4 border-white flex items-center justify-center text-white shadow-[0_4px_16px_rgba(37,99,235,0.4)] hover:scale-105 active:scale-95 transition-transform"
-              title="Geo Camera"
-            >
-              <Camera className="w-6 h-6 text-white" />
-              <span className="absolute -bottom-5 text-[9px] font-black text-blue-600 uppercase tracking-tighter">
+            <div className="flex flex-col items-center justify-center -mt-5">
+              <button
+                type="button"
+                onClick={() => setActiveScreen('geocam')}
+                className="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 border-[3px] border-white flex items-center justify-center text-white shadow-md shadow-blue-500/30 hover:scale-105 active:scale-95 transition-transform"
+                aria-label="Geo Camera"
+              >
+                <Camera className="w-6 h-6 text-white" />
+              </button>
+              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-tight mt-0.5">
                 Geo-Cam
               </span>
-            </button>
+            </div>
 
             {/* Tickets */}
             <button

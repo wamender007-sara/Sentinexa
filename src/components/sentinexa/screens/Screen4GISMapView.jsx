@@ -38,10 +38,10 @@ export default function Screen4GISMapView({ onSelectTicket }) {
   };
 
   return (
-    <div className="relative w-full h-full font-sans select-none overflow-hidden">
+    <div className="relative w-full h-full min-h-[500px] flex-1 flex flex-col font-sans select-none overflow-hidden">
       
       {/* Embedded Fullscreen Map */}
-      <div className="w-full h-full">
+      <div className="w-full h-full flex-1 relative min-h-[450px]">
         <GISMap onSelectTicket={onSelectTicket} />
       </div>
 

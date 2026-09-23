@@ -57,7 +57,8 @@ export default function Screen3AEmergencyFlow({ photoData, capturedData, onBack,
       routingPortal: 'State Emergency Command & n8n Priority Webhook',
       status: 'DISPATCHED',
       createdAt: new Date().toISOString(),
-      photoUrl
+      photoUrl: photoUrl || 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&auto=format&fit=crop&q=80',
+      imageUri: photoUrl || 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&auto=format&fit=crop&q=80'
     };
 
     if (typeof addIncident === 'function') {

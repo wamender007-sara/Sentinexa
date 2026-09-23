@@ -1,4 +1,4 @@
-// Mock dataset of realistic civic incidents and hospitals for CIVICLOOP
+// Mock dataset of realistic civic incidents and hospitals for CIVICLOOP / SENTINEXA
 
 export const initialIncidents = [
   {
@@ -23,7 +23,7 @@ export const initialIncidents = [
     createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
     unacknowledgedDays: 0,
     retryCount: 0,
-    imageUri: 'https://images.unsplash.com/photo-1587740896339-96a76170508d?w=600&auto=format&fit=crop&q=60'
+    imageUri: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'INC-2026-8801',
@@ -47,7 +47,7 @@ export const initialIncidents = [
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     unacknowledgedDays: 3,
     retryCount: 0,
-    imageUri: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=60'
+    imageUri: 'https://images.unsplash.com/photo-1547683905-f686c993aae5?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'INC-2026-9902',
@@ -71,7 +71,7 @@ export const initialIncidents = [
     createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
     unacknowledgedDays: 0,
     retryCount: 0,
-    imageUri: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=60'
+    imageUri: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'INC-2026-7703',
@@ -95,7 +95,7 @@ export const initialIncidents = [
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     unacknowledgedDays: 1,
     retryCount: 0,
-    imageUri: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=60'
+    imageUri: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'INC-2026-6604',
@@ -119,7 +119,7 @@ export const initialIncidents = [
     createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
     unacknowledgedDays: 0,
     retryCount: 0,
-    imageUri: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=600&auto=format&fit=crop&q=60'
+    imageUri: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'INC-2026-5505',
@@ -144,7 +144,7 @@ export const initialIncidents = [
     solvedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     unacknowledgedDays: 0,
     retryCount: 1,
-    imageUri: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=60'
+    imageUri: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80'
   }
 ];
 

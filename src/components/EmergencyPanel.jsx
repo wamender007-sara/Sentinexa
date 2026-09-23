@@ -48,7 +48,7 @@ export default function EmergencyPanel() {
       createdAt: new Date().toISOString(),
       unacknowledgedDays: 0,
       retryCount: 0,
-      imageUri: capturedGeoPhoto?.imageUri || 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=60'
+      imageUri: capturedGeoPhoto?.imageUri || 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&auto=format&fit=crop&q=60'
     };
 
     // Add to store & trigger agent pipeline + n8n webhook

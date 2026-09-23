@@ -186,16 +186,19 @@ export default function Screen1HomeDashboard({
             </div>
           </div>
 
-          {/* Incident Pins on Mini Map */}
-          <div className="absolute top-4 left-6 flex items-center space-x-1 bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md animate-bounce">
-            <span>🚨 Crash</span>
+          {/* Incident Pins on Mini Map - Positioned at top corners to avoid overlap */}
+          <div className="absolute top-2.5 left-3 z-10 flex items-center space-x-1 bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+            <span>🚨 Crash (0.8km)</span>
           </div>
-          <div className="absolute bottom-4 right-8 flex items-center space-x-1 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md">
-            <span>⚠️ Road Hazard</span>
+          <div className="absolute top-2.5 right-3 z-10 flex items-center space-x-1 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+            <span>⚠️ Road Hazard (1.4km)</span>
           </div>
 
-          <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-slate-700 border border-slate-200 text-[9px] font-mono shadow-xs">
-            {incidents.length || 4} active geocoded signals in 5 km
+          {/* Bottom stats pill - clean and non-overlapping */}
+          <div className="absolute bottom-2 left-3 right-3 z-10 flex justify-center">
+            <span className="px-2.5 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-slate-700 border border-slate-200 text-[9px] font-mono shadow-xs">
+              {incidents.length || 4} active geocoded signals within 5 km
+            </span>
           </div>
         </div>
       </div>

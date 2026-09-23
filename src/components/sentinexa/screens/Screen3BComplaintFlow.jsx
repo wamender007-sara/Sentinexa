@@ -63,7 +63,8 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
       status: 'ROUTED_WARD',
       createdAt: new Date().toISOString(),
       slaHours: 48,
-      photoUrl: photoUrl
+      photoUrl: photoUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80',
+      imageUri: photoUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80'
     };
 
     if (typeof addIncident === 'function') {

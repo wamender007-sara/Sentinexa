@@ -93,6 +93,23 @@ function MapRecenter({ center, zoom }) {
   return null;
 }
 
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    map.invalidateSize();
+    const t1 = setTimeout(() => map.invalidateSize(), 150);
+    const t2 = setTimeout(() => map.invalidateSize(), 500);
+    const handleResize = () => map.invalidateSize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [map]);
+  return null;
+}
+
 // Automatically pans / fits bounds to relevant filtered incidents
 function MapAutoFitter({ incidents, categoryFilter }) {
   const map = useMap();
@@ -193,7 +210,7 @@ export default function GISMap({ onSelectTicket }) {
   const tileConfig = getTileConfig();
 
   return (
-    <div className="relative w-full h-[calc(100vh-62px)] overflow-hidden bg-[#0d1e33] flex flex-col font-sans">
+    <div className="relative w-full h-full min-h-[450px] flex-1 overflow-hidden bg-[#F1F5F9] flex flex-col font-sans">
       
       {/* Top Map Control Bar */}
       <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
@@ -350,12 +367,14 @@ export default function GISMap({ onSelectTicket }) {
       <MapContainer
         center={mapCenter}
         zoom={mapZoom}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', minHeight: '100%' }}
         zoomControl={false}
       >
+        <MapResizer />
         <MapRecenter center={mapCenter} zoom={mapZoom} />
         <MapAutoFitter incidents={filteredIncidents} categoryFilter={categoryFilter} />
 
+        {/* Primary Base Tile Layer */}
         <TileLayer
           key={mapType}
           url={tileConfig.url}
@@ -363,6 +382,28 @@ export default function GISMap({ onSelectTicket }) {
           maxNativeZoom={tileConfig.maxNativeZoom}
           maxZoom={tileConfig.maxZoom}
         />
+
+        {/* Satellite Mode: Location, Area Names, Road & Boundary Overlays */}
+        {mapType === 'satellite' && (
+          <>
+            <TileLayer
+              key="sat-roads"
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+              maxNativeZoom={18}
+              maxZoom={19}
+              opacity={0.85}
+              pane="overlayPane"
+            />
+            <TileLayer
+              key="sat-labels"
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+              maxNativeZoom={18}
+              maxZoom={19}
+              opacity={1}
+              pane="overlayPane"
+            />
+          </>
+        )}
 
         {/* Render Markers */}
         {filteredIncidents.map(inc => (
