@@ -2,6 +2,30 @@
 
 export const initialIncidents = [
   {
+    id: 'INC-2026-9901',
+    type: 'EMERGENCY',
+    category: 'accident',
+    severity: 5,
+    title: 'Major Multi-Vehicle Collision & Fuel Leak Hazard',
+    tamilTitle: 'அண்ணா சாலையில் விபத்து மற்றும் எரிபொருள் கசிவு ஆபத்து',
+    description: 'High-severity accident on Anna Salai near Thousand Lights metro station. Fuel tank rupture, immediate medical triage and foam unit required.',
+    tamilDescription: 'ஆயிரம் விளக்கு மெட்ரோ நிலையம் அருகே அண்ணா சாலையில் கடும் விபத்து மற்றும் எரிபொருள் கசிவு ஏற்பட்டுள்ளது. அவசர மருத்துவ உதவி தேவை.',
+    lat: 13.0604,
+    long: 80.2496,
+    state: 'Tamil Nadu',
+    district: 'Chennai',
+    address: 'Anna Salai, Thousand Lights, Chennai - 600006',
+    department: 'Fire & Rescue Services & Apollo Emergency Response Unit',
+    routingPortal: '108 Ambulance Network & GCC Disaster Cell',
+    truthScore: 99,
+    corroboratingSignals: 15,
+    status: 'VERIFIED',
+    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    unacknowledgedDays: 0,
+    retryCount: 0,
+    imageUri: 'https://images.unsplash.com/photo-1587740896339-96a76170508d?w=600&auto=format&fit=crop&q=60'
+  },
+  {
     id: 'INC-2026-8801',
     type: 'CIVIC',
     category: 'drainage',
