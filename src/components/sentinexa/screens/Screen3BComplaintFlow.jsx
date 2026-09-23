@@ -1,28 +1,18 @@
 import React, { useState } from 'react';
 import { useCivicStore } from '../../../store/useCivicStore';
 import { 
-  FileText, 
-  Send, 
-  ArrowLeft, 
-  Languages, 
-  Building2, 
-  CheckCircle2, 
-  Sparkles, 
-  Clock,
-  ShieldCheck,
-  MapPin,
-  AlertTriangle
+  FileText, Send, ArrowLeft, Building2, CheckCircle2, Clock, MapPin, Sparkles, Languages
 } from 'lucide-react';
 
 export default function Screen3BComplaintFlow({ photoData, capturedData, onBack, onComplete, onSubmitSuccess }) {
   const effectiveData = photoData || capturedData;
   const { addIncident } = useCivicStore();
   const [selectedCategory, setSelectedCategory] = useState('road');
-  const [title, setTitle] = useState('Deep Pothole & Road Cave-in on Main Junction');
-  const [tamilTitle, setTamilTitle] = useState('முக்கிய சந்திப்பில் அபாயகரமான பள்ளம் மற்றும் சாலை சிதைவு');
+  const [title, setTitle] = useState('Deep Pothole & Road Cave-in');
+  const [tamilTitle, setTamilTitle] = useState('முக்கிய சந்திப்பில் ஆபத்தான பள்ளம்');
   const [description, setDescription] = useState('Severe road pothole causing two-wheeler skidding hazards during peak traffic hours.');
-  const [tamilDescription, setTamilDescription] = useState('பீக் ஹவர்ஸில் இருசக்கர வாகனங்கள் சறுக்கி விழும் வகையில் ஆபத்தான சாலை பள்ளம்.');
-  const [activeLang, setActiveLang] = useState('en'); // 'en' | 'ta'
+  const [tamilDescription, setTamilDescription] = useState('பீக் ஹவர்ஸில் இருசக்கர வாகனங்கள் சறுக்கி விழும் ஆபத்தான சாலை பள்ளம்.');
+  const [activeLang, setActiveLang] = useState('en');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdTicket, setCreatedTicket] = useState(null);
 
@@ -30,43 +20,17 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
   const effectiveLocation = effectiveData?.location || storeUserLocation;
   const lat = effectiveLocation?.lat || 11.0168;
   const long = effectiveLocation?.long || 76.9558;
-  const address = effectiveLocation?.address || 'Cross Cut Road, Gandhipuram, Coimbatore - 641012';
+  const address = effectiveLocation?.address || 'Gandhipuram, Coimbatore - 641012';
   const district = effectiveLocation?.district || 'Coimbatore';
   const photoUrl = effectiveData?.image || null;
-
   const isCoimbatore = district.toLowerCase().includes('coimbatore');
 
   const categories = [
-    { 
-      id: 'road', 
-      label: 'Roads & Potholes', 
-      aiSuggested: true, 
-      dept: isCoimbatore ? 'CCMC Roads & Bridges Dept / Ward 52' : 'Municipal Roads & Infrastructure Division' 
-    },
-    { 
-      id: 'drainage', 
-      label: 'Drainage & Sewage', 
-      aiSuggested: false, 
-      dept: isCoimbatore ? 'CCMC Underground Drainage & Sanitation Cell' : 'Municipal Water & Sewerage Board' 
-    },
-    { 
-      id: 'water', 
-      label: 'Water Leak / Burst', 
-      aiSuggested: false, 
-      dept: isCoimbatore ? 'Siruvani / Pilloor Water Supply Wing (CCMC)' : 'Public Water Works Dept' 
-    },
-    { 
-      id: 'eb', 
-      label: 'Street Light & Power', 
-      aiSuggested: false, 
-      dept: 'TANGEDCO (TNEB) Distribution Circle' 
-    },
-    { 
-      id: 'sanitation', 
-      label: 'Garbage & Waste', 
-      aiSuggested: false, 
-      dept: isCoimbatore ? 'CCMC Solid Waste Management Division' : 'Municipal Solid Waste Cell' 
-    }
+    { id: 'road', label: '🛣️ Roads & Potholes', aiSuggested: true, dept: isCoimbatore ? 'CCMC Roads & Bridges Dept' : 'Municipal Roads Division' },
+    { id: 'drainage', label: '🚿 Drainage & Sewage', aiSuggested: false, dept: isCoimbatore ? 'CCMC Drainage & Sanitation' : 'Water & Sewerage Board' },
+    { id: 'water', label: '💧 Water Leak / Burst', aiSuggested: false, dept: isCoimbatore ? 'Siruvani Water Supply (CCMC)' : 'Public Water Works Dept' },
+    { id: 'eb', label: '💡 Street Light / Power', aiSuggested: false, dept: 'TANGEDCO Distribution Circle' },
+    { id: 'sanitation', label: '🗑️ Garbage & Waste', aiSuggested: false, dept: isCoimbatore ? 'CCMC Solid Waste Management' : 'Municipal Solid Waste Cell' }
   ];
 
   const currentCategory = categories.find(c => c.id === selectedCategory) || categories[0];
@@ -74,279 +38,187 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     const ticketId = 'CIVIC-' + Math.floor(1000 + Math.random() * 9000);
     const newComplaint = {
-      id: ticketId,
-      type: 'CIVIC',
-      category: selectedCategory,
-      severity: 2,
+      id: ticketId, type: 'CIVIC', category: selectedCategory, severity: 2,
       title: activeLang === 'ta' ? tamilTitle : title,
-      tamilTitle,
-      description: activeLang === 'ta' ? tamilDescription : description,
-      tamilDescription,
-      lat,
-      long,
-      state: 'Tamil Nadu',
-      district: district,
-      address,
-      department: currentCategory.dept,
-      status: 'ROUTED_WARD',
-      createdAt: new Date().toISOString(),
-      slaHours: 48,
-      photoUrl: photoUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80',
-      imageUri: photoUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80'
+      tamilTitle, description: activeLang === 'ta' ? tamilDescription : description,
+      tamilDescription, lat, long, state: 'Tamil Nadu', district, address,
+      department: currentCategory.dept, status: 'ROUTED_WARD',
+      createdAt: new Date().toISOString(), slaHours: 48,
+      photoUrl: photoUrl || null, imageUri: photoUrl || null
     };
-
-    if (typeof addIncident === 'function') {
-      addIncident(newComplaint);
-    }
-
+    if (typeof addIncident === 'function') addIncident(newComplaint);
     setTimeout(() => {
       setIsSubmitting(false);
       setCreatedTicket(newComplaint);
-      if (typeof onComplete === 'function') onComplete(newComplaint);
-      if (typeof onSubmitSuccess === 'function') onSubmitSuccess(newComplaint);
+      onComplete?.(newComplaint);
+      onSubmitSuccess?.(newComplaint);
     }, 900);
   };
 
-  return (
-    <div className="flex flex-col h-full bg-[#F8FAFC] text-slate-800 font-sans overflow-y-auto">
-      
-      {/* Top Header */}
-      <div className="p-4 border-b border-slate-200 bg-white sticky top-0 z-20 flex items-center justify-between shadow-sm">
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={onBack}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-1.5">
-              <FileText className="w-4 h-4 text-blue-600" />
-              Civic Complaint Dispatch
-            </h2>
-            <p className="text-[10px] font-mono text-slate-500">Autonomous Ward Triage Protocol</p>
+  // ── SUCCESS STATE ──
+  if (createdTicket) {
+    return (
+      <div className="flex flex-col h-full bg-gray-50 items-center justify-center px-6 text-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center">
+          <CheckCircle2 className="w-9 h-9 text-emerald-600" />
+        </div>
+        <div>
+          <span className="inline-block px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold mb-2">
+            Ticket Registered & Routed
+          </span>
+          <h3 className="text-xl font-black text-slate-900">#{createdTicket.id}</h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Forwarded to <strong className="text-blue-700">{createdTicket.department}</strong>
+          </p>
+        </div>
+        <div className="w-full bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-left">
+          <div className="flex items-center gap-2 text-amber-800 font-bold text-xs mb-1">
+            <Clock className="w-4 h-4" /> 48-Hour Resolution Guarantee
           </div>
+          <p className="text-[11px] text-amber-900">
+            Auto-escalates to Tamil Nadu Commissioner if not resolved within 48 hours.
+          </p>
         </div>
+        <button
+          onClick={onBack}
+          className="w-full py-3.5 rounded-2xl bg-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-200"
+        >
+          Return to Home
+        </button>
+      </div>
+    );
+  }
 
-        <div className="flex items-center space-x-1.5">
-          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-          <span className="text-[11px] font-mono font-bold text-blue-600">AI AUTO-ROUTER</span>
+  // ── FORM ──
+  return (
+    <div className="flex flex-col h-full bg-gray-50 overflow-y-auto">
+
+      {/* Header */}
+      <div className="bg-white px-4 pt-3 pb-3 border-b border-slate-100 shadow-sm sticky top-0 z-20 flex items-center gap-3">
+        <button onClick={onBack} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div>
+          <h2 className="font-black text-slate-900 text-base flex items-center gap-1.5">
+            <FileText className="w-4 h-4 text-blue-600" /> Report Complaint
+          </h2>
+          <p className="text-[10px] text-slate-400">{address}</p>
         </div>
+        <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+          AI Routing
+        </span>
       </div>
 
-      {createdTicket ? (
-        /* Success Confirmation Card */
-        <div className="p-5 flex-1 flex flex-col justify-center items-center text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-lg border-2 border-emerald-300">
-            <CheckCircle2 className="w-8 h-8" />
-          </div>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 p-4 pb-8">
 
-          <div className="space-y-1">
-            <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-xs font-bold inline-block">
-              TICKET REGISTERED & ROUTED
+        {/* Photo preview */}
+        {photoUrl && (
+          <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm max-h-40 bg-slate-100">
+            <img src={photoUrl} alt="Incident" className="w-full h-full object-cover" />
+          </div>
+        )}
+
+        {/* Category chips */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-blue-500" /> Category
             </span>
-            <h3 className="text-lg font-black text-slate-900 pt-1">
-              Ticket #{createdTicket.id}
-            </h3>
-            <p className="text-xs text-slate-600 max-w-xs">
-              Forwarded autonomously to <strong className="text-blue-700">{createdTicket.department}</strong>.
-            </p>
+            <span className="text-[10px] text-blue-600 font-semibold">AI Auto-Detected</span>
           </div>
-
-          {/* SLA Countdown Card */}
-          <div className="w-full max-w-sm p-4 rounded-2xl bg-amber-50 border border-amber-200 text-left space-y-1.5">
-            <div className="flex items-center space-x-1.5 text-amber-800 text-xs font-bold">
-              <Clock className="w-4 h-4 text-amber-600" />
-              <span>48-Hour Auto-Escalation SLA Active</span>
-            </div>
-            <p className="text-[11px] text-amber-900 leading-relaxed">
-              If not resolved by ward engineer within 48 hours, this complaint automatically escalates to the Tamil Nadu Commissioner of Municipal Administration.
-            </p>
+          <div className="grid grid-cols-2 gap-2">
+            {categories.map(cat => (
+              <button
+                type="button" key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`p-2.5 rounded-xl border text-left text-xs flex flex-col gap-0.5 transition-all ${
+                  selectedCategory === cat.id
+                    ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-400'
+                    : 'bg-white border-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-800">{cat.label}</span>
+                  {cat.aiSuggested && (
+                    <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">AI</span>
+                  )}
+                </div>
+                <span className="text-[10px] text-slate-400 line-clamp-1">{cat.dept}</span>
+              </button>
+            ))}
           </div>
-
-          <button
-            onClick={onBack}
-            className="w-full max-w-sm py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all"
-          >
-            Return to Dashboard
-          </button>
         </div>
-      ) : (
-        /* Complaint Entry Form */
-        <form onSubmit={handleSubmit} className="p-4 space-y-4 pb-8">
-          
-          {/* Photo Preview Strip if Available */}
-          {photoUrl && (
-            <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm max-h-44 bg-slate-100">
-              <img src={photoUrl} alt="Incident preview" className="w-full h-full object-cover" />
-              <div className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur text-[10px] font-mono text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/40">
-                Verified Geo Evidence Included
-              </div>
+
+        {/* Routing preview */}
+        <div className="bg-white rounded-xl border border-slate-200 px-3 py-2.5 flex items-start gap-2">
+          <Building2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-slate-900">{currentCategory.dept}</p>
+            <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+              <MapPin className="w-3 h-3" /> {address}
+            </p>
+          </div>
+        </div>
+
+        {/* Bilingual memo */}
+        <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <Languages className="w-4 h-4 text-blue-500" /> Complaint Details
+            </span>
+            <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-bold">
+              <button type="button" onClick={() => setActiveLang('en')}
+                className={`px-3 py-1 rounded-md transition-all ${activeLang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-600'}`}>
+                EN
+              </button>
+              <button type="button" onClick={() => setActiveLang('ta')}
+                className={`px-3 py-1 rounded-md transition-all ${activeLang === 'ta' ? 'bg-blue-600 text-white' : 'text-slate-600'}`}>
+                தமிழ்
+              </button>
+            </div>
+          </div>
+
+          {activeLang === 'ta' ? (
+            <div className="space-y-2">
+              <input type="text" value={tamilTitle} onChange={e => setTamilTitle(e.target.value)}
+                placeholder="புகார் தலைப்பு..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400" required />
+              <textarea rows={3} value={tamilDescription} onChange={e => setTamilDescription(e.target.value)}
+                placeholder="புகார் விவரம்..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400" required />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+                placeholder="Complaint title..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400" required />
+              <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)}
+                placeholder="Describe the issue..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400" required />
             </div>
           )}
+        </div>
 
-          {/* AI Category Chips */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" /> Select Category
-              </span>
-              <span className="text-[10px] font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                AI Vision Auto-Detected
-              </span>
-            </div>
+        {/* 48hr SLA note */}
+        <div className="flex items-start gap-2 px-3 py-2.5 bg-amber-50 border border-amber-100 rounded-xl">
+          <Clock className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+          <p className="text-[11px] text-amber-800">
+            <strong>48-hour SLA.</strong> Auto-escalates to TN Municipal Commissioner if unresolved.
+          </p>
+        </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              {categories.map((cat) => (
-                <button
-                  type="button"
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`p-2.5 rounded-xl border text-left transition-all text-xs flex flex-col justify-between ${
-                    selectedCategory === cat.id
-                      ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-sm ring-1 ring-blue-500'
-                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-bold">{cat.label}</span>
-                    {cat.aiSuggested && (
-                      <span className="text-[9px] bg-blue-600 text-white font-mono px-1.5 py-0.2 rounded font-bold">
-                        98% Match
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-slate-500 mt-1 line-clamp-1">{cat.dept}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Routing Preview Card */}
-          <div className="p-3 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono text-slate-500 uppercase font-bold flex items-center gap-1">
-                <Building2 className="w-3.5 h-3.5 text-blue-600" /> Target Department Routing
-              </span>
-              <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded font-mono font-semibold">
-                Direct API Sync
-              </span>
-            </div>
-            <p className="text-xs font-bold text-slate-900">{currentCategory.dept}</p>
-            <p className="text-[11px] text-slate-500 flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-blue-600 shrink-0" />
-              <span>{address}</span>
-            </p>
-          </div>
-
-          {/* Bilingual Memo Toggle & Inputs */}
-          <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <Languages className="w-4 h-4 text-blue-600" /> Official Memo Format
-              </span>
-
-              {/* Language Pill */}
-              <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => setActiveLang('en')}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    activeLang === 'en' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  English
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveLang('ta')}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    activeLang === 'ta' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  தமிழ்
-                </button>
-              </div>
-            </div>
-
-            {activeLang === 'ta' ? (
-              <div className="space-y-2">
-                <div>
-                  <label className="text-[10px] font-bold text-slate-600 uppercase">புகார் தலைப்பு</label>
-                  <input
-                    type="text"
-                    value={tamilTitle}
-                    onChange={(e) => setTamilTitle(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500"
-                    placeholder="புகார் தலைப்பு..."
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-slate-600 uppercase">விவரங்கள்</label>
-                  <textarea
-                    rows={3}
-                    value={tamilDescription}
-                    onChange={(e) => setTamilDescription(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
-                    placeholder="புகார் விவரம்..."
-                    required
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div>
-                  <label className="text-[10px] font-bold text-slate-600 uppercase">Complaint Title</label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500"
-                    placeholder="Complaint title..."
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-slate-600 uppercase">Description & Details</label>
-                  <textarea
-                    rows={3}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
-                    placeholder="Complaint description..."
-                    required
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 2-3 Day Auto-Escalation Guarantee Badge */}
-          <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 flex items-start space-x-2.5">
-            <Clock className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-            <div className="text-[11px] text-amber-900">
-              <span className="font-bold block">Tamil Nadu 48-Hour Resolution Guarantee</span>
-              Automated multi-agent retries ping GCC ward supervisor every 6 hours. Auto-escalates on day 2.
-            </div>
-          </div>
-
-          {/* Submit Action Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-blue-500/25 flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
-          >
-            <Send className="w-4 h-4" />
-            <span>{isSubmitting ? 'GENERATING TICKET & ROUTING...' : 'CONFIRM & SUBMIT CIVIC COMPLAINT'}</span>
-          </button>
-
-        </form>
-      )}
-
+        {/* Submit */}
+        <button
+          type="submit" disabled={isSubmitting}
+          className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-sm uppercase tracking-wide shadow-lg shadow-blue-200 flex items-center justify-center gap-2 transition-all disabled:opacity-60"
+        >
+          <Send className="w-4 h-4" />
+          {isSubmitting ? 'Submitting…' : 'Submit Complaint'}
+        </button>
+      </form>
     </div>
   );
 }

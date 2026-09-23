@@ -6,19 +6,8 @@ import {
   getTamilNaduCityHint 
 } from '../../../services/geoService';
 import { 
-  Camera, 
-  MapPin, 
-  AlertOctagon, 
-  FileText, 
-  RefreshCw, 
-  SwitchCamera, 
-  ArrowRight, 
-  CheckCircle2, 
-  Crosshair, 
-  Upload, 
-  Check, 
-  Smartphone, 
-  Image as ImageIcon 
+  Camera, MapPin, AlertOctagon, FileText, RefreshCw, 
+  ArrowRight, CheckCircle2, Crosshair, Image as ImageIcon, Smartphone, X
 } from 'lucide-react';
 
 export default function Screen2GeoCamCapture({ onProceedToFlow, onCapture, onClose }) {
@@ -28,7 +17,7 @@ export default function Screen2GeoCamCapture({ onProceedToFlow, onCapture, onClo
 
   const [stream, setStream] = useState(null);
   const [facingMode, setFacingMode] = useState('environment');
-  const [captureMode, setCaptureMode] = useState('complaint'); // 'complaint' | 'emergency'
+  const [captureMode, setCaptureMode] = useState('complaint');
   const [capturedImage, setCapturedImage] = useState(null);
   const [isLocating, setIsLocating] = useState(true);
   const [cameraActive, setCameraActive] = useState(false);
@@ -36,500 +25,370 @@ export default function Screen2GeoCamCapture({ onProceedToFlow, onCapture, onClo
   const storeUserLocation = useCivicStore(state => state.userLocation);
   const setUserLocation = useCivicStore(state => state.setUserLocation);
 
-  // Initialize with existing global location or sensing state
   const [location, setLocation] = useState(() => {
-    if (storeUserLocation && storeUserLocation.lat) {
-      return storeUserLocation;
-    }
+    if (storeUserLocation?.lat) return storeUserLocation;
     return {
-      lat: null,
-      long: null,
-      accuracy: null,
-      address: 'Sensing live GPS satellites...',
-      district: 'Coimbatore',
-      city: 'Coimbatore',
-      isLocked: false,
+      lat: null, long: null, accuracy: null,
+      address: 'Sensing GPS...', district: 'Coimbatore',
+      city: 'Coimbatore', isLocked: false,
       timestamp: new Date().toISOString()
     };
   });
 
-  // Track live GPS continuously with cellular fast fix + satellite lock
+  // Live GPS tracking
   useEffect(() => {
     setIsLocating(true);
     const unwatch = startLiveLocationTracking(
-      (newLoc) => {
-        setLocation(newLoc);
-        setIsLocating(false);
-        setUserLocation(newLoc);
-      },
-      (status) => {
-        if (status?.isLocating !== undefined) {
-          setIsLocating(status.isLocating);
-        }
-      }
+      (newLoc) => { setLocation(newLoc); setIsLocating(false); setUserLocation(newLoc); },
+      (status) => { if (status?.isLocating !== undefined) setIsLocating(status.isLocating); }
     );
-
     return () => unwatch();
   }, [setUserLocation]);
 
-  // Start live WebRTC camera stream
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, [facingMode]);
-
-  // Ensure stream connects to video element and starts playback
+  // Camera stream
+  useEffect(() => { startCamera(); return () => stopCamera(); }, [facingMode]);
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
       videoRef.current.play()
         .then(() => setCameraActive(true))
-        .catch(err => {
-          console.warn('Video auto-playback caught:', err);
-          setCameraActive(false);
-        });
+        .catch(() => setCameraActive(false));
     }
   }, [stream]);
 
   const startCamera = async () => {
     stopCamera();
     try {
-      const constraints = {
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: facingMode }, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
-      };
-      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-      setStream(mediaStream);
-    } catch (err) {
-      console.warn('Standard camera constraints failed, attempting fallback:', err);
+      });
+      setStream(s);
+    } catch {
       try {
-        const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        setStream(fallbackStream);
-      } catch (fallbackErr) {
-        console.warn('Camera preview not supported or permission denied:', fallbackErr);
+        const s2 = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        setStream(s2);
+      } catch {
         setCameraActive(false);
       }
     }
   };
 
   const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-      setCameraActive(false);
-    }
+    if (stream) { stream.getTracks().forEach(t => t.stop()); setStream(null); setCameraActive(false); }
   };
 
-  // Manual GPS refresh trigger on tapping the badge
   const handleRefreshGPS = () => {
     setIsLocating(true);
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const accuracy = Math.round(pos.coords.accuracy);
+          const { latitude: lat, longitude: lon, accuracy } = pos.coords;
           const hint = getTamilNaduCityHint(lat, lon);
-          
           const updated = {
-            lat,
-            long: lon,
-            accuracy,
+            lat, long: lon, accuracy: Math.round(accuracy),
             address: `${hint.area}, ${hint.city}, Tamil Nadu`,
-            city: hint.city,
-            district: hint.district,
-            isLocked: true,
-            timestamp: new Date().toISOString()
+            city: hint.city, district: hint.district,
+            isLocked: true, timestamp: new Date().toISOString()
           };
-          setLocation(updated);
-          setUserLocation(updated);
-          setIsLocating(false);
-
-          // Asynchronous reverse geocode enrichment
+          setLocation(updated); setUserLocation(updated); setIsLocating(false);
           const geoRes = await reverseGeocode(lat, lon);
           if (geoRes?.address) {
-            const enriched = {
-              ...updated,
-              address: geoRes.address,
-              city: geoRes.city,
-              district: geoRes.district
-            };
-            setLocation(enriched);
-            setUserLocation(enriched);
+            const enriched = { ...updated, address: geoRes.address, city: geoRes.city, district: geoRes.district };
+            setLocation(enriched); setUserLocation(enriched);
           }
         },
-        (err) => {
-          console.warn('GPS refresh error:', err);
-          setIsLocating(false);
-        },
+        () => setIsLocating(false),
         { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
       );
-    } else {
-      setIsLocating(false);
-    }
+    } else setIsLocating(false);
   };
 
-  // Helper to burn live GPS watermark on captured image
   const watermarkAndSave = useCallback((sourceImgOrCanvas) => {
     const canvas = document.createElement('canvas');
-    const width = 800;
-    const height = 600;
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = 800; canvas.height = 600;
     const ctx = canvas.getContext('2d');
 
     if (sourceImgOrCanvas) {
-      ctx.drawImage(sourceImgOrCanvas, 0, 0, width, height);
+      ctx.drawImage(sourceImgOrCanvas, 0, 0, 800, 600);
     } else {
       ctx.fillStyle = captureMode === 'emergency' ? '#fee2e2' : '#e0f2fe';
-      ctx.fillRect(0, 0, width, height);
-
+      ctx.fillRect(0, 0, 800, 600);
       ctx.fillStyle = captureMode === 'emergency' ? '#dc2626' : '#2563eb';
-      ctx.font = 'bold 24px sans-serif';
+      ctx.font = 'bold 22px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(
-        captureMode === 'emergency' ? '🚨 EMERGENCY INCIDENT EVIDENCE' : '📋 CIVIC COMPLAINT EVIDENCE', 
-        width / 2, 
-        height / 2 - 20
-      );
-      ctx.font = '16px monospace';
-      ctx.fillStyle = '#475569';
-      ctx.fillText('TAMIL NADU MUNICIPAL & EMERGENCY RESPONSE MESH', width / 2, height / 2 + 15);
+      ctx.fillText(captureMode === 'emergency' ? '🚨 EMERGENCY EVIDENCE' : '📋 CIVIC COMPLAINT EVIDENCE', 400, 280);
     }
 
-    // Determine accurate coordinates and address for watermark
-    const activeLat = location.lat != null ? location.lat : 11.0168;
-    const activeLong = location.long != null ? location.long : 76.9558;
-    const activeAcc = location.accuracy != null ? `(±${location.accuracy}m)` : '(GPS Fix)';
-    
+    const activeLat = location.lat ?? 11.0168;
+    const activeLong = location.long ?? 76.9558;
+    const activeAcc = location.accuracy ? `(±${location.accuracy}m)` : '';
     let activeAddr = location.address;
     if (!activeAddr || activeAddr.includes('Sensing')) {
       const hint = getTamilNaduCityHint(activeLat, activeLong);
       activeAddr = `${hint.area}, ${hint.city}, Tamil Nadu`;
     }
 
-    // Burn GPS Watermark bar on bottom of image
-    const bh = 85;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-    ctx.fillRect(0, height - bh, width, bh);
+    // GPS watermark bar
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.fillRect(0, 515, 800, 85);
     ctx.fillStyle = captureMode === 'emergency' ? '#dc2626' : '#2563eb';
-    ctx.fillRect(0, height - bh, width, 4);
-
+    ctx.fillRect(0, 515, 800, 4);
     ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 15px monospace';
+    ctx.font = 'bold 14px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`📍 LAT: ${activeLat.toFixed(5)}° N | LONG: ${activeLong.toFixed(5)}° E ${activeAcc}`, 20, height - bh + 28);
-
+    ctx.fillText(`📍 LAT: ${activeLat.toFixed(5)}° N  |  LONG: ${activeLong.toFixed(5)}° E  ${activeAcc}`, 20, 543);
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '13px sans-serif';
-    ctx.fillText(`🕒 ${new Date().toLocaleTimeString()} • ${activeAddr}`, 20, height - bh + 52);
-
+    ctx.font = '12px sans-serif';
+    ctx.fillText(`🕒 ${new Date().toLocaleTimeString()} • ${activeAddr}`, 20, 567);
     ctx.fillStyle = '#10b981';
-    ctx.font = 'bold 11px monospace';
-    ctx.fillText(`🛡️ SENTINEXA GEO-CAM VERIFIED EVIDENCE • HMAC AUTHENTICATED`, 20, height - bh + 72);
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(`🛡️ SENTINEXA GEO-CAM VERIFIED • HMAC AUTHENTICATED`, 20, 587);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-    setCapturedImage(dataUrl);
+    setCapturedImage(canvas.toDataURL('image/jpeg', 0.92));
   }, [captureMode, location]);
 
-  // Handle capture from live video stream
   const handleCapture = () => {
     const video = videoRef.current;
     if (video && cameraActive && video.videoWidth > 0 && video.readyState >= 2) {
       watermarkAndSave(video);
     } else {
-      if (fileInputRef.current) {
-        fileInputRef.current.click();
-      } else {
-        const fallbackImg = new Image();
-        fallbackImg.crossOrigin = 'anonymous';
-        fallbackImg.onload = () => watermarkAndSave(fallbackImg);
-        fallbackImg.onerror = () => watermarkAndSave(null);
-        fallbackImg.src = captureMode === 'emergency'
-          ? 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&auto=format&fit=crop&q=80'
-          : 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop&q=80';
-      }
+      fileInputRef.current?.click();
     }
   };
 
-  // Handle photo from phone's native camera or gallery
   const handleFilePicked = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = (ev) => {
       const img = new Image();
-      img.onload = () => {
-        watermarkAndSave(img);
-      };
-      img.src = event.target.result;
+      img.onload = () => watermarkAndSave(img);
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   };
 
   const handleConfirmAndProceed = () => {
-    const resolvedLat = location.lat != null ? location.lat : 11.0168;
-    const resolvedLong = location.long != null ? location.long : 76.9558;
+    const resolvedLat = location.lat ?? 11.0168;
+    const resolvedLong = location.long ?? 76.9558;
     const hint = getTamilNaduCityHint(resolvedLat, resolvedLong);
     const resolvedAddr = (!location.address || location.address.includes('Sensing'))
-      ? `${hint.area}, ${hint.city}, Tamil Nadu`
-      : location.address;
+      ? `${hint.area}, ${hint.city}, Tamil Nadu` : location.address;
 
     const payload = {
       image: capturedImage,
-      location: {
-        ...location,
-        lat: resolvedLat,
-        long: resolvedLong,
-        address: resolvedAddr,
-        district: location.district || hint.district,
-        city: location.city || hint.city
-      },
+      location: { ...location, lat: resolvedLat, long: resolvedLong, address: resolvedAddr, district: location.district || hint.district, city: location.city || hint.city },
       mode: captureMode
     };
-
-    if (typeof onProceedToFlow === 'function') {
-      onProceedToFlow(captureMode, payload);
-    } else if (typeof onCapture === 'function') {
-      onCapture(payload);
-    }
+    if (typeof onProceedToFlow === 'function') onProceedToFlow(captureMode, payload);
+    else if (typeof onCapture === 'function') onCapture(payload);
   };
 
-  return (
-    <div className="relative w-full h-full bg-slate-900 rounded-[36px] overflow-hidden flex flex-col justify-between font-sans select-none">
-      
-      {/* Hidden Native Device Camera & Gallery Inputs */}
-      <input 
-        ref={fileInputRef} 
-        type="file" 
-        accept="image/*" 
-        capture="environment" 
-        className="hidden" 
-        onChange={handleFilePicked} 
-      />
-      <input 
-        ref={galleryInputRef} 
-        type="file" 
-        accept="image/*" 
-        className="hidden" 
-        onChange={handleFilePicked} 
-      />
+  // ── RENDER ──
 
-      {/* Top Overlay: Live GPS Stamp & Close */}
-      <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-auto">
+  // After capture: confirmation view (LIGHT)
+  if (capturedImage) {
+    return (
+      <div className="flex flex-col h-full bg-white overflow-y-auto">
+        {/* Header */}
+        <div className="px-4 pt-4 pb-3 border-b border-slate-100 flex items-center gap-3">
+          <button onClick={() => setCapturedImage(null)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+            <X className="w-4 h-4" />
+          </button>
+          <div>
+            <h2 className="font-black text-slate-900 text-base">Photo Captured</h2>
+            <p className="text-[11px] text-slate-500">GPS metadata embedded</p>
+          </div>
+          <span className="ml-auto px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3" /> Verified
+          </span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {/* Photo */}
+          <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
+            <img src={capturedImage} alt="Captured" className="w-full object-cover max-h-56" />
+          </div>
+
+          {/* Geo info */}
+          <div className="bg-slate-50 rounded-xl border border-slate-200 px-3 py-2.5 space-y-1.5">
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+              <p className="text-xs font-semibold text-slate-800 break-words">
+                {location.address || 'Coimbatore, Tamil Nadu'}
+              </p>
+            </div>
+            <p className="text-[11px] font-mono text-slate-500 pl-6">
+              {location.lat ? `${location.lat.toFixed(5)}°N, ${location.long.toFixed(5)}°E` : '—'}
+              {location.accuracy ? ` (±${location.accuracy}m)` : ''}
+            </p>
+            <p className="text-[11px] text-slate-400 pl-6">{new Date().toLocaleString()}</p>
+          </div>
+
+          {/* Mode indicator */}
+          <div className={`rounded-xl px-3 py-2 flex items-center gap-2 ${
+            captureMode === 'emergency' ? 'bg-red-50 border border-red-200' : 'bg-blue-50 border border-blue-200'
+          }`}>
+            {captureMode === 'emergency'
+              ? <AlertOctagon className="w-4 h-4 text-red-600" />
+              : <FileText className="w-4 h-4 text-blue-600" />
+            }
+            <span className={`text-xs font-bold uppercase ${captureMode === 'emergency' ? 'text-red-700' : 'text-blue-700'}`}>
+              {captureMode === 'emergency' ? 'Emergency SOS Report' : 'Civic Complaint Report'}
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom actions */}
+        <div className="px-4 pb-6 pt-3 space-y-2 border-t border-slate-100">
+          <button
+            onClick={handleConfirmAndProceed}
+            className={`w-full py-3.5 rounded-2xl font-black text-sm text-white shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 ${
+              captureMode === 'emergency' ? 'bg-red-600 shadow-red-200' : 'bg-blue-600 shadow-blue-200'
+            }`}
+          >
+            Continue to {captureMode === 'emergency' ? 'Emergency' : 'Complaint'}
+            <ArrowRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setCapturedImage(null)}
+            className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm"
+          >
+            Retake Photo
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Camera viewfinder (DARK — full screen camera)
+  return (
+    <div className="relative w-full h-full bg-slate-950 flex flex-col overflow-hidden">
+      {/* Hidden inputs */}
+      <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFilePicked} />
+      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFilePicked} />
+
+      {/* ── TOP OVERLAY: GPS badge + close ── */}
+      <div className="absolute top-0 left-0 right-0 z-30 px-3 pt-3 pb-2 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
         <button
           onClick={handleRefreshGPS}
-          title="Live GPS status. Tap to refresh."
-          className="px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-slate-200 text-slate-800 font-mono text-[11px] flex items-center space-x-2 active:scale-95 transition-transform"
+          className="px-3 py-1.5 rounded-full bg-black/70 backdrop-blur border border-white/20 text-white font-mono text-[11px] flex items-center gap-2"
         >
-          <Crosshair className={`w-3.5 h-3.5 ${isLocating ? 'text-blue-600 animate-spin' : 'text-emerald-600'}`} />
+          <Crosshair className={`w-3.5 h-3.5 ${isLocating ? 'text-amber-400 animate-spin' : 'text-emerald-400'}`} />
           {location.lat != null ? (
-            <>
-              <span className="text-blue-700 font-bold">{location.lat.toFixed(4)}°N, {location.long.toFixed(4)}°E</span>
-              <span className="text-emerald-700 font-semibold bg-emerald-100 px-1.5 py-0.2 rounded">±{location.accuracy || 4}m</span>
-            </>
-          ) : (
-            <span className="text-amber-700 font-semibold flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping inline-block"></span>
-              Sensing Live GPS...
+            <span className="text-emerald-300 font-bold">
+              {location.lat.toFixed(4)}°N, {location.long.toFixed(4)}°E
             </span>
+          ) : (
+            <span className="text-amber-300">Sensing GPS…</span>
+          )}
+          {location.accuracy && (
+            <span className="text-white/60 text-[10px]">±{location.accuracy}m</span>
           )}
         </button>
-
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-full bg-white/95 backdrop-blur-md shadow-md text-slate-800 hover:bg-white flex items-center justify-center font-bold text-sm border border-slate-200"
+          className="w-8 h-8 rounded-full bg-black/70 backdrop-blur border border-white/20 flex items-center justify-center text-white"
         >
-          ✕
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Main Viewfinder Stream or Confirmation Card */}
-      <div className="relative w-full h-full flex items-center justify-center bg-slate-950">
-        {capturedImage ? (
-          /* Confirmation Card in Clean Light UI */
-          <div className="absolute inset-0 bg-white p-5 flex flex-col justify-between z-40 overflow-y-auto">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[11px] font-bold inline-flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5" /> GPS METADATA LOCKED
-                </span>
-                <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                  VERIFIED GEO-TAG
-                </span>
-              </div>
+      {/* ── VIDEO VIEWFINDER ── */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        {stream && (
+          <video
+            ref={videoRef}
+            autoPlay playsInline muted
+            onLoadedMetadata={() => setCameraActive(true)}
+            className="w-full h-full object-cover"
+          />
+        )}
 
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-lg">
-                  Photo Captured with Geotags
-                </h3>
-                <p className="text-xs text-slate-500">Live coordinates and location burned into cryptographic evidence</p>
-              </div>
-              
-              {/* Photo Preview */}
-              <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-md max-h-64 bg-slate-100">
-                <img src={capturedImage} alt="Captured preview" className="w-full object-cover" />
-              </div>
-
-              {/* Geo metadata card */}
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 space-y-1">
-                <p className="font-bold flex items-center gap-1.5 text-slate-900">
-                  <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span className="break-words">
-                    {location.address || `${getTamilNaduCityHint(location.lat || 11.0168, location.long || 76.9558).area}, Coimbatore, Tamil Nadu`}
-                  </span>
-                </p>
-                <p className="text-slate-500 text-[11px]">
-                  Coordinates: <strong>{location.lat ? location.lat.toFixed(5) : '11.01680'}°N, {location.long ? location.long.toFixed(5) : '76.95580'}°E</strong>
-                </p>
-                <p className="text-slate-500 text-[11px]">Timestamp: {new Date().toLocaleString()}</p>
-                <p className="text-slate-500 text-[11px]">Mode: <strong className="uppercase text-blue-600">{captureMode}</strong></p>
-              </div>
+        {/* Fallback when camera not active */}
+        {!cameraActive && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-900/95 text-white text-center px-8">
+            <div className="w-16 h-16 rounded-full bg-blue-600/20 border-2 border-blue-400/50 flex items-center justify-center">
+              <Camera className="w-8 h-8 text-blue-400 animate-pulse" />
             </div>
-
-            {/* Bottom Actions */}
-            <div className="space-y-2 pt-3">
-              <button
-                id="btn-confirm-continue"
-                onClick={handleConfirmAndProceed}
-                className={`w-full py-3.5 rounded-2xl font-black text-sm uppercase tracking-wider text-white shadow-lg flex items-center justify-center space-x-2 transition-all active:scale-98 ${
-                  captureMode === 'emergency'
-                    ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20'
-                    : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
-                }`}
-              >
-                <span>Confirm &amp; Continue to {captureMode}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={() => setCapturedImage(null)}
-                className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
-              >
-                Retake Photo
-              </button>
+            <div>
+              <h4 className="font-bold text-base">GEO Camera</h4>
+              <p className="text-xs text-slate-400 mt-1">Tap below to open your phone camera or pick from gallery</p>
             </div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center gap-2"
+            >
+              <Smartphone className="w-4 h-4" /> Open Camera
+            </button>
           </div>
-        ) : (
-          /* Live Camera Viewfinder */
-          <div className="relative w-full h-full flex items-center justify-center">
-            {stream ? (
-              <video 
-                ref={videoRef} 
-                autoPlay 
-                playsInline 
-                muted 
-                onLoadedMetadata={() => setCameraActive(true)}
-                className="w-full h-full object-cover" 
-              />
-            ) : null}
+        )}
 
-            {/* Fallback & Phone Camera Launcher if WebRTC is waiting */}
-            {!cameraActive && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-900/90 text-white space-y-4">
-                <div className="w-16 h-16 rounded-full bg-blue-600/20 border-2 border-blue-400 flex items-center justify-center text-blue-400 animate-pulse">
-                  <Camera className="w-8 h-8" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-base text-white">Geo-Cam Ready</h4>
-                  <p className="text-xs text-slate-300 mt-1 max-w-xs">
-                    Tap below to take a photo using your phone's camera with live GPS watermark.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg flex items-center space-x-2 active:scale-95"
-                >
-                  <Smartphone className="w-4 h-4" />
-                  <span>Open Phone Camera</span>
-                </button>
-              </div>
-            )}
-
-            {/* Target Reticle */}
-            <div className="absolute w-56 h-56 border-2 border-dashed border-white/50 rounded-3xl pointer-events-none flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-blue-400/80 shadow-[0_0_10px_#60a5fa]"></div>
-            </div>
+        {/* Target reticle */}
+        {cameraActive && (
+          <div className="absolute w-52 h-52 border-2 border-dashed border-white/40 rounded-3xl pointer-events-none flex items-center justify-center">
+            <div className="w-2.5 h-2.5 rounded-full bg-blue-400/80 shadow-[0_0_10px_#60a5fa]" />
           </div>
         )}
       </div>
 
-      {/* Bottom Controls: Mode Toggle ABOVE Shutter Button */}
-      {!capturedImage && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-black/85 via-black/50 to-transparent flex flex-col items-center gap-3 z-20">
-          
-          {/* Mode Switcher Toggle Pill - DIRECTLY ABOVE SHUTTER */}
-          <div className="flex items-center p-1 rounded-full bg-white/95 backdrop-blur-md shadow-lg border border-slate-200">
-            <button
-              onClick={() => setCaptureMode('complaint')}
-              className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                captureMode === 'complaint'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Civic Complaint</span>
-            </button>
-
-            <button
-              onClick={() => setCaptureMode('emergency')}
-              className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                captureMode === 'emergency'
-                  ? 'bg-red-600 text-white shadow-md animate-pulse'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <AlertOctagon className="w-3.5 h-3.5" />
-              <span>Emergency SOS</span>
-            </button>
-          </div>
-
-          {/* Shutter Button Row */}
-          <div className="w-full flex items-center justify-around px-8">
-            {/* Gallery Upload Option */}
-            <button
-              type="button"
-              onClick={() => galleryInputRef.current?.click()}
-              className="w-11 h-11 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all active:scale-95"
-              title="Upload Photo from Gallery"
-            >
-              <ImageIcon className="w-4 h-4 text-slate-700" />
-            </button>
-
-            {/* Central Shutter Button */}
-            <button
-              onClick={handleCapture}
-              className={`w-18 h-18 rounded-full border-4 p-1 shadow-2xl transition-transform active:scale-95 flex items-center justify-center ${
-                captureMode === 'emergency'
-                  ? 'border-red-400 bg-red-600 hover:bg-red-500 shadow-red-600/40'
-                  : 'border-blue-400 bg-blue-600 hover:bg-blue-500 shadow-blue-600/40'
-              }`}
-            >
-              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center">
-                <Camera className={`w-7 h-7 ${captureMode === 'emergency' ? 'text-red-600' : 'text-blue-600'}`} />
-              </div>
-            </button>
-
-            {/* Switch Camera / Device Camera Trigger */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-11 h-11 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all active:scale-95"
-              title="Open Device Camera"
-            >
-              <Smartphone className="w-4 h-4 text-blue-600" />
-            </button>
-          </div>
+      {/* ── BOTTOM CONTROLS ── */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 pt-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex flex-col items-center gap-4">
+        
+        {/* Mode toggle pill */}
+        <div className="flex p-1 rounded-full bg-black/70 backdrop-blur border border-white/20 gap-1">
+          <button
+            onClick={() => setCaptureMode('complaint')}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+              captureMode === 'complaint' ? 'bg-blue-600 text-white' : 'text-white/60'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" /> Complaint
+          </button>
+          <button
+            onClick={() => setCaptureMode('emergency')}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+              captureMode === 'emergency' ? 'bg-red-600 text-white' : 'text-white/60'
+            }`}
+          >
+            <AlertOctagon className="w-3.5 h-3.5" /> Emergency
+          </button>
         </div>
-      )}
 
+        {/* Shutter row */}
+        <div className="flex items-center justify-around w-full px-6">
+          {/* Gallery */}
+          <button
+            onClick={() => galleryInputRef.current?.click()}
+            className="w-11 h-11 rounded-full bg-white/15 border border-white/20 flex items-center justify-center"
+          >
+            <ImageIcon className="w-5 h-5 text-white" />
+          </button>
+
+          {/* Main shutter */}
+          <button
+            onClick={handleCapture}
+            className={`w-[72px] h-[72px] rounded-full border-4 flex items-center justify-center shadow-2xl active:scale-95 transition-transform ${
+              captureMode === 'emergency'
+                ? 'border-red-400 bg-red-600 shadow-red-500/40'
+                : 'border-blue-400 bg-blue-600 shadow-blue-500/40'
+            }`}
+          >
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center">
+              <Camera className={`w-7 h-7 ${captureMode === 'emergency' ? 'text-red-600' : 'text-blue-600'}`} />
+            </div>
+          </button>
+
+          {/* Open phone cam */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-11 h-11 rounded-full bg-white/15 border border-white/20 flex items-center justify-center"
+          >
+            <Smartphone className="w-5 h-5 text-white" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

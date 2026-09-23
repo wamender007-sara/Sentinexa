@@ -1,250 +1,160 @@
 import React, { useState } from 'react';
-import { 
-  Globe, Bell, Shield, Cpu, Award, Smartphone, CheckCircle, 
-  ChevronRight, Volume2, Moon, Sliders, RefreshCw, AlertTriangle
-} from 'lucide-react';
+import { Globe, Bell, Shield, Award, ChevronRight, Smartphone, MapPin } from 'lucide-react';
+import { useCivicStore } from '../../../store/useCivicStore';
 
 export default function Screen7ProfileSettings({ onBack }) {
+  const userLocation = useCivicStore(state => state.userLocation);
   const [lang, setLang] = useState('en');
   const [notifs, setNotifs] = useState({
-    emergencyOnly: false,
-    allCivic: true,
-    agentAudit: true,
-    soundAlert: true
+    emergency: true,
+    civic: true,
+    agents: false
   });
   const [offlineSync, setOfflineSync] = useState(true);
 
-  const t = {
-    en: {
-      title: 'Settings & Trust Profile',
-      subtitle: 'Autonomous Node Configuration',
-      profileBadge: 'Verified Civic Scout',
-      level: 'Level 4 · 42 Reports Resolved',
-      langTitle: 'Application Language',
-      langSub: 'Instant UI & Memo Bilingual Switch',
-      notifTitle: 'Dispatch & Alert Preferences',
-      notifEmergency: 'Critical Emergency Broadcasts (108/100)',
-      notifCivic: 'Civic Triage & SLA Notifications',
-      notifAudit: 'Agent Lifecycle Step Audit Feeds',
-      n8nTitle: 'Agent Orchestration Pipeline',
-      n8nStatus: 'n8n Cloud Workflow: Connected',
-      n8nLatency: 'Webhook Latency: 142ms',
-      offlineTitle: 'Resilient Offline Queue',
-      offlineSub: 'Local SQLite caching with background sync on reconnect',
-      emergencyContacts: 'Emergency SOS Contacts',
-      primaryContact: 'Chennai City Police Control: 100',
-      secondaryContact: 'State Emergency Ambulance Service: 108'
-    },
-    ta: {
-      title: 'சுயவிவரம் & அமைப்புகள்',
-      subtitle: 'தன்னாட்சி முகவர் கட்டமைப்பு',
-      profileBadge: 'சரிபார்க்கப்பட்ட குடிமை சாரணர்',
-      level: 'நிலை 4 · 42 கோரிக்கைகள் தீர்க்கப்பட்டன',
-      langTitle: 'செயலி மொழி மாற்றம்',
-      langSub: 'தமிழ் மற்றும் ஆங்கிலம் இருமொழி வசதி',
-      notifTitle: 'அறிவிப்பு விருப்பங்கள்',
-      notifEmergency: 'முக்கிய அவசர கால அறிவிப்புகள் (108/100)',
-      notifCivic: 'குடிமை குறைகள் & SLA தீர்வு அறிவிப்புகள்',
-      notifAudit: 'முகவர் வாழ்க்கை சுழற்சி பதிவுகள்',
-      n8nTitle: 'முகவர் ஒருங்கிணைப்பு கட்டமைப்பு',
-      n8nStatus: 'n8n கிளவுட் பணிப்பாய்வு: இணைக்கப்பட்டது',
-      n8nLatency: 'வலைக்கொக்கி தாமதம்: 142ms',
-      offlineTitle: 'இணையமற்ற பதிவு முறை',
-      offlineSub: 'இணையம் வரும்போது தானாக பதிவேற்றம் செய்யப்படும்',
-      emergencyContacts: 'அவசர SOS தொடர்புகள்',
-      primaryContact: 'சென்னை காவல் கட்டுப்பாட்டு அறை: 100',
-      secondaryContact: 'மாநில ஆம்புலன்ஸ் அவசர சேவை: 108'
-    }
-  };
+  const Toggle = ({ checked, onChange }) => (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`w-10 h-5.5 rounded-full transition-colors flex items-center px-0.5 ${checked ? 'bg-blue-600' : 'bg-slate-200'}`}
+    >
+      <span className={`w-4 h-4 bg-white rounded-full shadow transition-transform ${checked ? 'translate-x-4.5' : 'translate-x-0'}`} />
+    </button>
+  );
 
-  const cur = t[lang];
+  const city = userLocation?.city || 'Coimbatore';
+  const district = userLocation?.district || 'Coimbatore';
+
+  const isTamil = lang === 'ta';
 
   return (
-    <div className="flex flex-col h-full bg-[#F8FAFC] text-slate-800 font-sans overflow-y-auto select-none">
-      
-      {/* Top Header */}
-      <div className="p-4 border-b border-slate-200 bg-white sticky top-0 z-20 flex items-center justify-between shadow-sm">
-        <div>
-          <h2 className="text-base font-extrabold text-slate-900 tracking-wide flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-600" />
-            {cur.title}
+    <div className="flex flex-col h-full bg-gray-50 overflow-y-auto pb-20">
+
+      {/* Header */}
+      <div className="bg-white px-4 pt-3 pb-3 shadow-sm border-b border-slate-100">
+        <div className="flex items-center justify-between">
+          <h2 className="font-black text-slate-900 text-base flex items-center gap-2">
+            <Shield className="w-4 h-4 text-blue-600" />
+            {isTamil ? 'அமைப்புகள்' : 'Settings'}
           </h2>
-          <p className="text-[11px] text-slate-500 font-mono">{cur.subtitle}</p>
-        </div>
-        <button 
-          onClick={onBack}
-          className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 font-bold transition-colors"
-        >
-          Done
-        </button>
-      </div>
-
-      <div className="p-4 space-y-4 pb-20">
-        
-        {/* Civic Scout Badge Card */}
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 text-white">
-              <Award className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm text-slate-900">{cur.profileBadge}</span>
-                <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-mono font-bold">
-                  Trust 98.4%
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">{cur.level}</p>
-              <div className="w-48 bg-slate-100 h-2 rounded-full mt-2 overflow-hidden border border-slate-200">
-                <div className="bg-gradient-to-r from-blue-600 to-emerald-500 h-full w-[85%] rounded-full"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Language Switcher EN / TA */}
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-blue-600" />
-              <div>
-                <h3 className="text-xs font-bold text-slate-900">{cur.langTitle}</h3>
-                <p className="text-[10px] text-slate-500">{cur.langSub}</p>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setLang('en')}
-              className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
-                lang === 'en'
-                  ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-xs'
-                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300'
-              }`}
-            >
-              <div>
-                <p className="text-xs font-bold">English (UK/IN)</p>
-                <p className="text-[10px] text-slate-500">Standard Gov Format</p>
-              </div>
-              {lang === 'en' && <CheckCircle className="w-4 h-4 text-blue-600" />}
-            </button>
-            <button
-              onClick={() => setLang('ta')}
-              className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
-                lang === 'ta'
-                  ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-xs'
-                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300'
-              }`}
-            >
-              <div>
-                <p className="text-xs font-bold">தமிழ் (Tamil)</p>
-                <p className="text-[10px] text-slate-500">தமிழ்நாடு அரசு வடிவம்</p>
-              </div>
-              {lang === 'ta' && <CheckCircle className="w-4 h-4 text-blue-600" />}
-            </button>
-          </div>
-        </div>
-
-        {/* n8n Connected Agent Infrastructure Status */}
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-                <Cpu className="w-5 h-5 text-amber-600" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-900">{cur.n8nTitle}</span>
-                  <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200 font-mono font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Live
-                  </span>
-                </div>
-                <p className="text-[11px] text-emerald-700 font-mono font-semibold mt-0.5">{cur.n8nStatus}</p>
-                <p className="text-[10px] text-slate-400 font-mono">{cur.n8nLatency} · TLS 1.3 · HMAC Verified</p>
-              </div>
-            </div>
-            <RefreshCw className="w-4 h-4 text-slate-400 hover:text-blue-600 cursor-pointer" />
-          </div>
-        </div>
-
-        {/* Notification Preferences */}
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
-          <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-900">{cur.notifTitle}</h3>
-          </div>
-
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-              <span className="text-xs text-slate-700">{cur.notifEmergency}</span>
-              <input 
-                type="checkbox" 
-                checked={notifs.emergencyOnly} 
-                onChange={() => setNotifs({...notifs, emergencyOnly: !notifs.emergencyOnly})}
-                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
-              />
-            </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-              <span className="text-xs text-slate-700">{cur.notifCivic}</span>
-              <input 
-                type="checkbox" 
-                checked={notifs.allCivic} 
-                onChange={() => setNotifs({...notifs, allCivic: !notifs.allCivic})}
-                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
-              />
-            </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-              <span className="text-xs text-slate-700">{cur.notifAudit}</span>
-              <input 
-                type="checkbox" 
-                checked={notifs.agentAudit} 
-                onChange={() => setNotifs({...notifs, agentAudit: !notifs.agentAudit})}
-                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Resilient Offline Mode */}
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-blue-600" />
-              <h3 className="text-xs font-bold text-slate-900">{cur.offlineTitle}</h3>
-            </div>
-            <p className="text-[10px] text-slate-500 mt-0.5">{cur.offlineSub}</p>
-          </div>
-          <button
-            onClick={() => setOfflineSync(!offlineSync)}
-            className={`w-11 h-6 flex items-center rounded-full p-1 duration-200 cursor-pointer ${
-              offlineSync ? 'bg-blue-600 justify-end' : 'bg-slate-300 justify-start'
-            }`}
-          >
-            <div className="w-4 h-4 bg-white rounded-full shadow-md"></div>
+          <button onClick={onBack}
+            className="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl font-bold border border-slate-200">
+            Done
           </button>
         </div>
+      </div>
 
-        {/* Quick Emergency SOS Cards */}
-        <div className="p-4 rounded-2xl bg-red-50 border border-red-200">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
-            <h3 className="text-xs font-bold text-red-900">{cur.emergencyContacts}</h3>
+      <div className="p-4 space-y-3">
+
+        {/* Profile Badge */}
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-4 flex items-center gap-3 shadow-lg shadow-blue-200">
+          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+            <Award className="w-7 h-7 text-white" />
           </div>
-          <div className="space-y-1.5 text-xs text-slate-700">
-            <div className="flex justify-between items-center py-1 border-b border-red-100">
-              <span>{cur.primaryContact}</span>
-              <a href="tel:100" className="text-red-600 font-mono font-bold hover:underline">CALL 100</a>
+          <div>
+            <p className="text-white font-black text-sm">Verified Civic Scout</p>
+            <p className="text-blue-100 text-[11px]">Level 4 · 42 Reports Resolved</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <MapPin className="w-3 h-3 text-blue-200" />
+              <span className="text-blue-100 text-[11px]">{city}, {district}</span>
             </div>
-            <div className="flex justify-between items-center py-1">
-              <span>{cur.secondaryContact}</span>
-              <a href="tel:108" className="text-red-600 font-mono font-bold hover:underline">CALL 108</a>
+          </div>
+          <span className="ml-auto px-2.5 py-1 rounded-full bg-white/20 text-white text-[10px] font-bold">
+            🔥 42d
+          </span>
+        </div>
+
+        {/* Language */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-50">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5" /> Language
+            </h3>
+          </div>
+          <div className="px-4 py-3 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">App Language</p>
+              <p className="text-[11px] text-slate-400">English / தமிழ்</p>
+            </div>
+            <div className="flex bg-slate-100 p-0.5 rounded-xl gap-0.5 text-xs font-bold">
+              <button onClick={() => setLang('en')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${lang === 'en' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>
+                EN
+              </button>
+              <button onClick={() => setLang('ta')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${lang === 'ta' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>
+                தமிழ்
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="text-center pb-4 text-[10px] font-mono text-slate-400">
-          SENTINEXA MOBILE AGENT OS · BUILD 2026.09.23 · LIGHT EDITION
+        {/* Notifications */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-50">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <Bell className="w-3.5 h-3.5" /> Notifications
+            </h3>
+          </div>
+          {[
+            { key: 'emergency', label: 'Emergency Alerts', sub: 'Critical 108 / 100 dispatches', color: 'text-red-600' },
+            { key: 'civic', label: 'Civic Updates', sub: 'SLA alerts & ticket updates', color: 'text-blue-600' },
+            { key: 'agents', label: 'AI Agent Activity', sub: 'Pipeline steps & telemetry', color: 'text-indigo-600' }
+          ].map(({ key, label, sub, color }) => (
+            <div key={key} className="flex items-center justify-between px-4 py-3 border-b border-slate-50 last:border-0">
+              <div>
+                <p className={`text-sm font-semibold ${color}`}>{label}</p>
+                <p className="text-[11px] text-slate-400">{sub}</p>
+              </div>
+              <Toggle
+                checked={notifs[key]}
+                onChange={v => setNotifs(prev => ({ ...prev, [key]: v }))}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Device & Sync */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-50">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <Smartphone className="w-3.5 h-3.5" /> Device & Sync
+            </h3>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Offline Queue</p>
+              <p className="text-[11px] text-slate-400">Auto-sync when reconnected</p>
+            </div>
+            <Toggle checked={offlineSync} onChange={setOfflineSync} />
+          </div>
+        </div>
+
+        {/* Quick Dial */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-50">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Emergency Contacts</h3>
+          </div>
+          {[
+            { label: 'Police Control Room', number: '100' },
+            { label: 'Ambulance Service', number: '108' },
+            { label: 'Fire & Rescue', number: '101' }
+          ].map(({ label, number }) => (
+            <a key={number} href={`tel:${number}`}
+              className="flex items-center justify-between px-4 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 active:bg-slate-100">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">{label}</p>
+                <p className="text-xs font-mono text-blue-600">{number}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-300" />
+            </a>
+          ))}
+        </div>
+
+        {/* App Info */}
+        <div className="text-center pt-1 space-y-0.5">
+          <p className="text-xs font-black text-slate-400">SENTIN<span className="text-blue-500">EXA</span></p>
+          <p className="text-[10px] text-slate-300 font-mono">v2.1.0 · Tamil Nadu Civic Intelligence Mesh</p>
         </div>
       </div>
     </div>
