@@ -127,10 +127,12 @@ export default function MobileAppContainer({ isStandAlone = false }) {
         <div className="h-10 bg-white/95 backdrop-blur-md px-6 flex items-center justify-between text-[11px] font-bold text-slate-800 shrink-0 z-50 border-b border-slate-100">
           <span>{currentTime}</span>
           
-          {/* Dynamic Island Pill */}
-          <div className="w-24 h-4.5 bg-slate-900 rounded-full flex items-center justify-center gap-1.5 px-2 shadow-sm">
+          {/* Dynamic Island Pill with Sentinel Beacon */}
+          <div className="h-5 px-3 bg-slate-950 rounded-full flex items-center justify-center gap-1.5 shadow-sm border border-slate-800">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-[9px] font-mono text-cyan-300 font-bold">SENTINEXA</span>
+            <span className="text-[9px] font-black font-sans tracking-wider text-white uppercase flex items-center">
+              <span>SENTIN</span><span className="text-blue-400">EXA</span>
+            </span>
           </div>
 
           <div className="flex items-center gap-1.5 text-slate-700">

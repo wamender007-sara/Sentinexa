@@ -1,5 +1,7 @@
 import React from 'react';
 import { useCivicStore } from '../../../store/useCivicStore';
+import SentinexaLogo from '../SentinexaLogo';
+import HomeMiniMap from '../HomeMiniMap';
 import { 
   AlertOctagon, 
   FileText, 
@@ -12,9 +14,9 @@ import {
   CheckCircle2, 
   AlertTriangle,
   ChevronRight,
-  Send,
-  Cpu,
-  Radio
+  Radio,
+  Sparkles,
+  Languages
 } from 'lucide-react';
 
 export default function Screen1HomeDashboard({ 
@@ -27,13 +29,13 @@ export default function Screen1HomeDashboard({
     incidents, 
     streakDays, 
     solvedCount, 
-    agentLogs, 
     language,
+    setLanguage,
     userLocation
   } = useCivicStore();
 
   const pendingCount = incidents.filter(i => i.status !== 'SOLVED').length;
-  const recentLogs = agentLogs.slice(0, 4);
+  const recentIncidents = incidents.slice(0, 3);
 
   const handleEmergencyClick = () => {
     if (typeof onLaunchEmergency === 'function') {
@@ -55,196 +57,180 @@ export default function Screen1HomeDashboard({
     }
   };
 
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'ta' : 'en');
+  };
+
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC] text-slate-800 font-sans overflow-y-auto p-4 space-y-4 pb-20 select-none">
       
-      {/* Top Welcome & Agency Bar */}
+      {/* 1. TOP HEADER: New Brand Logo & Quick Status Bar */}
       <div className="flex items-center justify-between pt-1">
-        <div>
-          <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-slate-500 flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block mr-1"></span>
-            {userLocation?.city ? `${userLocation.city} • TN Civic Grid` : 'Coimbatore & TN Civic Grid'}
-          </span>
-          <h2 className="text-lg font-black tracking-tight text-slate-900">
-            {language === 'ta' ? 'அவசர & நகர்ப்புற மையம்' : 'Citizen Incident Command'}
-          </h2>
-        </div>
+        <SentinexaLogo size="sm" />
 
-        <div className="p-2 rounded-2xl bg-white border border-slate-200 shadow-sm text-blue-600">
-          <ShieldCheck className="w-5 h-5 text-blue-600" />
+        <div className="flex items-center space-x-2">
+          {/* Live Location Chip */}
+          <div className="px-2.5 py-1 rounded-full bg-white border border-slate-200 shadow-xs flex items-center space-x-1.5 text-[11px] font-semibold text-slate-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="font-bold text-slate-900">{userLocation?.city || 'Coimbatore'}</span>
+          </div>
+
+          {/* Language Toggle Button */}
+          <button
+            onClick={toggleLanguage}
+            className="px-2 py-1 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-xs flex items-center space-x-1 text-[11px] font-bold active:scale-95 transition-transform"
+            title="Switch Language (English / தமிழ்)"
+          >
+            <Languages className="w-3.5 h-3.5 text-blue-600" />
+            <span>{language === 'en' ? 'தமிழ்' : 'EN'}</span>
+          </button>
         </div>
       </div>
 
-      {/* 1. BIG TWO-BUTTON HERO: [🚨 EMERGENCY] and [📋 COMPLAINT] */}
+      {/* 2. CORE DUAL ACTIONS: [🚨 EMERGENCY SOS] and [📋 CIVIC COMPLAINT] */}
       <div className="grid grid-cols-2 gap-3">
         
-        {/* EMERGENCY HERO BUTTON */}
+        {/* EMERGENCY HERO CARD */}
         <button
           onClick={handleEmergencyClick}
-          className="relative overflow-hidden bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white p-4 rounded-3xl shadow-lg shadow-red-500/25 border border-red-500/30 flex flex-col justify-between h-36 transition-transform active:scale-95 text-left group"
+          className="relative overflow-hidden bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white p-4 rounded-3xl shadow-lg shadow-red-500/20 border border-red-500/30 flex flex-col justify-between h-36 transition-all active:scale-95 text-left group"
         >
           <div className="flex items-center justify-between w-full">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xs">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xs shadow-inner">
               <AlertOctagon className="w-6 h-6 text-white animate-bounce" />
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-black/30 text-white font-mono text-[9px] uppercase font-bold tracking-wider">
-              PRIORITY 1
+            <span className="px-2 py-0.5 rounded-full bg-black/25 text-white font-mono text-[9px] uppercase font-bold tracking-wider">
+              1-TAP SOS
             </span>
           </div>
 
           <div>
             <div className="font-black text-base tracking-tight leading-none uppercase">
-              🚨 EMERGENCY
+              {language === 'ta' ? '🚨 அவசர உதவி' : '🚨 EMERGENCY'}
             </div>
-            <p className="text-[11px] text-red-100 font-medium mt-1 leading-tight">
+            <p className="text-[11px] text-red-100 font-medium mt-1 leading-tight line-clamp-2">
               108 Ambulance, crash, fire & police
             </p>
           </div>
         </button>
 
-        {/* COMPLAINT HERO BUTTON */}
+        {/* COMPLAINT HERO CARD */}
         <button
           onClick={handleComplaintClick}
-          className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white p-4 rounded-3xl shadow-lg shadow-blue-500/20 border border-blue-400/30 flex flex-col justify-between h-36 transition-transform active:scale-95 text-left group"
+          className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white p-4 rounded-3xl shadow-lg shadow-blue-500/20 border border-blue-400/30 flex flex-col justify-between h-36 transition-all active:scale-95 text-left group"
         >
           <div className="flex items-center justify-between w-full">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xs">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xs shadow-inner">
               <FileText className="w-6 h-6 text-white" />
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-black/30 text-white font-mono text-[9px] uppercase font-bold tracking-wider">
-              CIVIC TICKET
+            <span className="px-2 py-0.5 rounded-full bg-black/25 text-white font-mono text-[9px] uppercase font-bold tracking-wider">
+              GEO-TAG
             </span>
           </div>
 
           <div>
             <div className="font-black text-base tracking-tight leading-none uppercase">
-              📋 COMPLAINT
+              {language === 'ta' ? '📋 புகார் பதிவு' : '📋 COMPLAINT'}
             </div>
-            <p className="text-[11px] text-blue-100 font-medium mt-1 leading-tight">
-              Potholes, sewage, water & streetlights
+            <p className="text-[11px] text-blue-100 font-medium mt-1 leading-tight line-clamp-2">
+              Potholes, drainage, water & streetlights
             </p>
           </div>
         </button>
 
       </div>
 
-      {/* 2. ACTIVE TICKETS STRIP & STREAK COUNTER */}
-      <div className="bg-white border border-slate-200 p-3.5 rounded-2xl shadow-sm flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-            <Flame className="w-5 h-5 text-amber-600 animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center space-x-1.5">
-              <span className="font-black text-xs text-slate-900 font-mono">
-                {streakDays || 42} Days Solved Streak
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500">
-              <strong>{solvedCount || 42} issues resolved</strong> this month
-            </p>
-          </div>
-        </div>
-
-        <div className="text-right">
-          <span className="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-700 font-mono text-xs font-bold inline-block border border-blue-200">
-            {pendingCount || 3} Pending
-          </span>
-        </div>
-      </div>
-
-      {/* 3. MINI LIVE MAP PREVIEW OF NEARBY INCIDENTS */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-2.5">
-        <div className="flex items-center justify-between">
+      {/* 3. REAL LIVE MAP PREVIEW ON FRONT PAGE (Leaflet Interactive Radar) */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-1">
           <div className="flex items-center space-x-1.5">
             <MapPin className="w-4 h-4 text-blue-600" />
-            <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-900">
-              Nearby Incidents Radar
+            <h3 className="font-black text-xs uppercase tracking-wider text-slate-900">
+              {language === 'ta' ? 'நேரலை வரைபடம்' : 'Live Area Radar'}
             </h3>
           </div>
+
           <button
             onClick={() => onNavigate && onNavigate('map')}
-            className="text-[11px] font-bold text-blue-600 hover:underline flex items-center space-x-0.5"
+            className="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center space-x-0.5"
           >
-            <span>Explore GIS Map</span>
+            <span>Full Map View</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Mini Map Graphic / Live Pin Bar */}
-        <div 
-          onClick={() => onNavigate && onNavigate('map')}
-          className="relative h-28 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 cursor-pointer group"
-        >
-          {/* Subtle Grid Texture */}
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:12px_12px]"></div>
+        {/* Real Live Leaflet Map Component */}
+        <HomeMiniMap onExpand={() => onNavigate && onNavigate('map')} />
+      </div>
 
-          {/* Chennai Central Radar Center */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-24 h-24 rounded-full border border-blue-500/30 animate-ping absolute"></div>
-            <div className="w-16 h-16 rounded-full border border-blue-500/50 flex items-center justify-center bg-blue-50/80 shadow-sm text-center px-1">
-              <span className="text-[9px] font-mono font-bold text-blue-700 leading-tight">
-                {userLocation?.city ? userLocation.city : 'Gandhipuram'}
-              </span>
-            </div>
-          </div>
+      {/* 4. CLEAN METRICS & RESOLUTION STRIP */}
+      <div className="grid grid-cols-3 gap-2.5">
+        <div className="p-3 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-col items-center text-center">
+          <Flame className="w-4 h-4 text-amber-500 mb-1" />
+          <span className="font-black text-sm text-slate-900 font-mono">{streakDays || 42} Days</span>
+          <span className="text-[10px] text-slate-500 font-medium">Active Streak</span>
+        </div>
 
-          {/* Incident Pins on Mini Map - Positioned at top corners to avoid overlap */}
-          <div className="absolute top-2.5 left-3 z-10 flex items-center space-x-1 bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-            <span>🚨 Crash (0.8km)</span>
-          </div>
-          <div className="absolute top-2.5 right-3 z-10 flex items-center space-x-1 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-            <span>⚠️ Road Hazard (1.4km)</span>
-          </div>
+        <div className="p-3 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-col items-center text-center">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 mb-1" />
+          <span className="font-black text-sm text-slate-900 font-mono">{solvedCount || 184}</span>
+          <span className="text-[10px] text-slate-500 font-medium">Resolved</span>
+        </div>
 
-          {/* Bottom stats pill - clean and non-overlapping */}
-          <div className="absolute bottom-2 left-3 right-3 z-10 flex justify-center">
-            <span className="px-2.5 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-slate-700 border border-slate-200 text-[9px] font-mono shadow-xs">
-              {incidents.length || 4} active geocoded signals within 5 km
-            </span>
-          </div>
+        <div className="p-3 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-col items-center text-center">
+          <Clock className="w-4 h-4 text-blue-600 mb-1" />
+          <span className="font-black text-sm text-slate-900 font-mono">{pendingCount || 3}</span>
+          <span className="text-[10px] text-slate-500 font-medium">In Progress</span>
         </div>
       </div>
 
-      {/* 4. RECENT ACTIVITY FEED (Autonomous Multi-Agent Logs) */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-2.5">
+      {/* 5. RECENT VERIFIED SIGNALS NEAR YOU */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs space-y-2.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1.5">
-            <Cpu className="w-4 h-4 text-indigo-600" />
-            <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-900">
-              Agent Swarm Activity Feed
-            </h3>
-          </div>
+          <span className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+            <Radio className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+            {language === 'ta' ? 'அண்மைய நிகழ்வுகள்' : 'Live Incident Feed'}
+          </span>
           <button
-            onClick={() => onNavigate && onNavigate('telemetry')}
-            className="text-[11px] font-bold text-indigo-600 hover:underline flex items-center space-x-0.5"
+            onClick={() => onNavigate && onNavigate('tickets')}
+            className="text-[11px] font-bold text-blue-600 hover:underline flex items-center space-x-0.5"
           >
-            <span>Telemetry</span>
+            <span>View All</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
         <div className="space-y-2">
-          {recentLogs.map((log) => (
+          {recentIncidents.map((inc) => (
             <div
-              key={log.id}
-              className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1"
+              key={inc.id}
+              onClick={() => onNavigate && onNavigate('map')}
+              className="p-2.5 rounded-xl bg-slate-50/80 hover:bg-slate-100 border border-slate-200/80 text-xs flex items-center justify-between cursor-pointer transition-colors"
             >
-              <div className="flex items-center justify-between text-[10px] font-mono">
-                <span className="font-bold text-slate-800 flex items-center space-x-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block mr-1"></span>
-                  {log.agent ? log.agent.replace('Agent', '') : 'Agent-01'}
-                </span>
-                <span className="text-slate-400">{log.timestamp}</span>
+              <div className="space-y-0.5 flex-1 min-w-0 pr-2">
+                <div className="flex items-center space-x-1.5">
+                  <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase font-mono ${
+                    inc.type === 'EMERGENCY' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {inc.type}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {inc.district || 'Coimbatore'}
+                  </span>
+                </div>
+                <p className="font-bold text-slate-800 text-[11px] truncate">
+                  {language === 'ta' && inc.tamilTitle ? inc.tamilTitle : inc.title}
+                </p>
+                <p className="text-[10px] text-slate-500 truncate">
+                  {inc.address}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-700 leading-snug font-medium line-clamp-2">
-                {log.message}
-              </p>
-              {log.linkedIncidentId && (
-                <span className="inline-block text-[9px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
-                  Ref #{log.linkedIncidentId}
+
+              <div className="text-right shrink-0">
+                <span className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                  {inc.truthScore}% Conf
                 </span>
-              )}
+              </div>
             </div>
           ))}
         </div>
