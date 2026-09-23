@@ -1,0 +1,107 @@
+{
+  "name": "Sentinexa Autonomous Civic & Emergency Response Mesh",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sentinexa-dispatch",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "sentinexa-webhook-input",
+      "name": "Sentinexa Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "sentinexa-dispatch"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-emergency-condition",
+              "leftValue": "={{ $json.body?.type || $json.type }}",
+              "rightValue": "EMERGENCY",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-emergency-filter",
+      "name": "Is Priority 1 Emergency?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, status: 'DISPATCHED_TO_EMERGENCY_MESH', ticketId: $json.body?.ticketId || $json.ticketId, targetHospital: 'Coimbatore Medical College Hospital (CMCH)', eta: '3 mins', units: ['108 Ambulance Unit #4', 'Coimbatore City Police PCR'], timestamp: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "respond-emergency-ack",
+      "name": "Respond SOS Dispatched",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [760, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, status: 'ROUTED_TO_MUNICIPAL_WARD_SLA_48H', ticketId: $json.body?.ticketId || $json.ticketId, department: $json.body?.department || $json.department || 'CCMC Infrastructure & Roads Wing', slaHours: 48, escalationDate: new Date(Date.now() + 48*3600*1000).toISOString(), timestamp: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "respond-civic-ack",
+      "name": "Respond Civic Grievance Routed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [760, 420]
+    }
+  ],
+  "connections": {
+    "Sentinexa Webhook": {
+      "main": [
+        [
+          {
+            "node": "Is Priority 1 Emergency?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Priority 1 Emergency?": {
+      "main": [
+        [
+          {
+            "node": "Respond SOS Dispatched",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Civic Grievance Routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

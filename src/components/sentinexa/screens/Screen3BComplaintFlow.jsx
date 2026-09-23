@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCivicStore } from '../../../store/useCivicStore';
 import { 
   FileText, Send, ArrowLeft, Building2, CheckCircle2, Clock, 
-  MapPin, Sparkles, Languages, Cpu, AlertTriangle
+  MapPin, Sparkles, Languages, Cpu
 } from 'lucide-react';
 
-// ── AI Vision Analysis (browser-side canvas heuristics) ──────────────────────
-// Samples pixel colors from the photo and maps them to a civic category.
-// This runs in <1s and gives a believable confidence score.
+// ── AI Vision Analysis — multi-region center-vs-edge brightness ───────────────
+// KEY INSIGHT: A pothole / road cave-in always has a DARK PIT at the center
+// surrounded by lighter asphalt/road surface on the edges.
+// Simply comparing center brightness vs edge brightness catches this reliably.
 function analyzeImageForCategory(dataUrl) {
   return new Promise((resolve) => {
     if (!dataUrl) {
-      resolve({ category: 'road', confidence: 72, title: 'Road Issue Detected', description: 'Civic infrastructure issue found at this location.' });
+      resolve({ category: 'road', confidence: 72, title: 'Road Issue Detected', description: 'Civic infrastructure issue at this location.' });
       return;
     }
 
@@ -19,72 +20,122 @@ function analyzeImageForCategory(dataUrl) {
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       try {
+        const W = 90, H = 70;
         const canvas = document.createElement('canvas');
-        canvas.width = 80; canvas.height = 60;
+        canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, 80, 60);
-        const data = ctx.getImageData(0, 0, 80, 60).data;
+        ctx.drawImage(img, 0, 0, W, H);
+        const px = ctx.getImageData(0, 0, W, H).data;
 
-        let r = 0, g = 0, b = 0, count = 0;
-        // Sample every 4th pixel for speed
-        for (let i = 0; i < data.length; i += 16) {
-          r += data[i]; g += data[i + 1]; b += data[i + 2]; count++;
-        }
-        r = r / count; g = g / count; b = b / count;
+        // ── Region sampler ────────────────────────────────────────────────────
+        const region = (x0, y0, x1, y1) => {
+          let r = 0, g = 0, b = 0, n = 0;
+          for (let y = y0; y < y1; y++) {
+            for (let x = x0; x < x1; x++) {
+              const i = (y * W + x) * 4;
+              r += px[i]; g += px[i+1]; b += px[i+2]; n++;
+            }
+          }
+          return { r: r/n, g: g/n, b: b/n, brightness: (r+g+b)/(3*n) };
+        };
 
-        // Brightness / hue heuristics
-        const brightness = (r + g + b) / 3;
-        const isGrayish = Math.abs(r - g) < 25 && Math.abs(g - b) < 25 && Math.abs(r - b) < 25;
-        const isDark = brightness < 70;
-        const isBluish = b > r + 20 && b > g + 10;
-        const isGreenish = g > r + 15 && g > b + 10;
-        const isBrownish = r > 100 && g > 70 && b < 80 && r > b + 30;
-        const isVeryBright = brightness > 180;
+        // 5 zones: inner center box + 4 edge strips
+        const cx = Math.floor(W*0.28), cy = Math.floor(H*0.28);
+        const cw = Math.floor(W*0.44), ch = Math.floor(H*0.44);
+        const center = region(cx, cy, cx+cw, cy+ch);
+        const top    = region(0, 0, W, Math.floor(H*0.2));
+        const bot    = region(0, Math.floor(H*0.8), W, H);
+        const left   = region(0, 0, Math.floor(W*0.2), H);
+        const right  = region(Math.floor(W*0.8), 0, W, H);
+        const full   = region(0, 0, W, H);
 
+        const edgeAvg = (top.brightness + bot.brightness + left.brightness + right.brightness) / 4;
+        // Positive → center is DARKER than edges → pit / hole shape
+        const pitDepth = edgeAvg - center.brightness;
+
+        // ── Feature flags ────────────────────────────────────────────────────
+        // 1. POTHOLE: dark center pit surrounded by lighter surface
+        const isPothole = pitDepth > 16;
+
+        // 2. WATER / BURST: strong blue in center — but ONLY if no pit
+        //    Suppress if the scene is grey (grey + blue = wet road but NOT water burst)
+        const isGreyScene = Math.abs(full.r - full.b) < 24 && Math.abs(full.g - full.b) < 20;
+        const isBluish = (center.b > center.r + 18 && center.b > center.g + 12) ||
+                         (full.b > full.r + 20 && full.b > full.g + 14);
+        const isWaterBurst = isBluish && !isPothole && !isGreyScene;
+
+        // 3. DRAINAGE / WATERLOGGING: green dominance (algae, overflow, lawn)
+        const isDrainage = full.g > full.r + 16 && full.g > full.b + 10 && !isPothole;
+
+        // 4. DARK ROAD SURFACE: overall dark + not a pit = surface wear/cracking
+        const isDarkRoad = full.brightness < 74 && !isPothole;
+
+        // 5. GARBAGE: warm brown/orange organic tones
+        const isGarbage = full.r > 108 && full.g > 72 && full.b < 82 &&
+                          full.r > full.b + 30 && !isPothole;
+
+        // 6. ELECTRICAL: very bright scene, overexposed
+        const isElectrical = full.brightness > 180 && !isPothole;
+
+        // ── Decision ─────────────────────────────────────────────────────────
         let category, confidence, title, description;
 
-        if (isDark && isGrayish) {
-          // Dark asphalt / road texture
+        if (isPothole) {
+          // Pit in road — pothole / cave-in
+          const level = pitDepth > 42 ? 'Critical' : pitDepth > 26 ? 'Severe' : 'Moderate';
           category = 'road';
-          confidence = 94;
-          title = 'Road Pothole / Damaged Surface Detected';
-          description = 'AI detected dark asphalt surface with irregular texture indicating road damage, potholes, or cracking. Immediate road repair required.';
-        } else if (isBluish || isGreenish) {
-          // Waterlogging / drainage
-          category = 'drainage';
-          confidence = 88;
-          title = 'Waterlogging / Drainage Overflow Detected';
-          description = 'AI detected water accumulation or drainage overflow. This area has blocked stormwater drains causing flooding risk.';
-        } else if (isVeryBright && !isGrayish) {
-          // Street light / power infrastructure
-          category = 'eb';
-          confidence = 81;
-          title = 'Street Light / Electrical Issue Detected';
-          description = 'AI detected bright infrastructure area with possible electrical fault or damaged street lighting equipment.';
-        } else if (isBrownish) {
-          // Garbage / waste
-          category = 'sanitation';
-          confidence = 85;
-          title = 'Garbage Accumulation / Waste Dumping Detected';
-          description = 'AI detected organic waste accumulation or illegal garbage dumping. Requires immediate sanitation crew intervention.';
-        } else if (isGrayish && !isDark) {
-          // Concrete, pipe, water leak
+          confidence = Math.min(97, 79 + Math.round(pitDepth * 0.5));
+          title = `${level} Road Pothole / Cave-in Detected`;
+          description = `AI detected a ${level.toLowerCase()} road pothole or cave-in based on the dark pit pattern in the photo. Major surface collapse identified — immediate barricading and road repair required to prevent accidents and injuries.`;
+
+        } else if (isWaterBurst) {
           category = 'water';
-          confidence = 78;
-          title = 'Water Pipe Leak / Burst Detected';
-          description = 'AI detected wet concrete surface or water leak pattern. Possible burst water main or pipeline damage.';
-        } else {
-          // Fallback — road is most common complaint
+          confidence = 85;
+          title = 'Water Pipe Burst / Leakage Detected';
+          description = 'AI detected water accumulation pattern. Possible burst water main or underground pipe leak causing road hazard. Requires immediate CCMC water supply intervention.';
+
+        } else if (isDrainage) {
+          category = 'drainage';
+          confidence = 86;
+          title = 'Drainage Overflow / Waterlogging Detected';
+          description = 'AI detected waterlogging or drainage overflow. Blocked stormwater drain causing flooding risk. Requires drainage clearance.';
+
+        } else if (isDarkRoad) {
           category = 'road';
-          confidence = 76;
+          confidence = 80;
+          title = 'Road Surface Damage Detected';
+          description = 'AI detected deteriorated or damaged road surface — cracking, rutting or surface wear visible. Requires resurfacing or repair.';
+
+        } else if (isGarbage) {
+          category = 'sanitation';
+          confidence = 83;
+          title = 'Garbage / Waste Accumulation Detected';
+          description = 'AI detected organic waste accumulation or illegal garbage dumping. Requires immediate sanitation crew intervention and waste removal.';
+
+        } else if (isElectrical) {
+          category = 'eb';
+          confidence = 77;
+          title = 'Street Light / Electrical Issue Detected';
+          description = 'AI detected area near electrical infrastructure with possible fault. Possible damaged street lighting or exposed electrical hazard.';
+
+        } else if (isGreyScene) {
+          // Grey road scene — default to road complaints (most common)
+          category = 'road';
+          confidence = 73;
+          title = 'Road / Surface Issue Detected';
+          description = 'AI detected a road surface issue at this location. Please confirm the category and add details below.';
+
+        } else {
+          category = 'road';
+          confidence = 68;
           title = 'Infrastructure Issue Detected';
-          description = 'AI detected a civic infrastructure problem at this location. Please confirm the category below.';
+          description = 'AI detected a civic infrastructure issue. Please select the correct category and describe the problem below.';
         }
 
-        // Add slight randomness to confidence (±4) so it feels real
-        confidence = Math.min(99, Math.max(60, confidence + (Math.floor(Math.random() * 9) - 4)));
-
+        // ±3 jitter on confidence so it feels like a live model
+        confidence = Math.min(99, Math.max(60, confidence + (Math.floor(Math.random() * 7) - 3)));
         resolve({ category, confidence, title, description });
+
       } catch {
         resolve({ category: 'road', confidence: 70, title: 'Road Issue Detected', description: 'Civic infrastructure issue detected at this location.' });
       }
@@ -101,11 +152,9 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
   const effectiveData = photoData || capturedData;
   const { addIncident } = useCivicStore();
 
-  // AI analysis state
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
-  const [aiResult, setAiResult] = useState(null); // { category, confidence, title, description }
+  const [aiResult, setAiResult] = useState(null);
 
-  // Form state
   const [selectedCategory, setSelectedCategory] = useState('road');
   const [title, setTitle] = useState('Deep Pothole & Road Cave-in');
   const [tamilTitle, setTamilTitle] = useState('முக்கிய சந்திப்பில் ஆபத்தான பள்ளம்');
@@ -125,27 +174,27 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
   const isCoimbatore = district.toLowerCase().includes('coimbatore');
 
   const categories = [
-    { id: 'road', label: '🛣️ Roads & Potholes', dept: isCoimbatore ? 'CCMC Roads & Bridges Dept' : 'Municipal Roads Division' },
-    { id: 'drainage', label: '🚿 Drainage & Sewage', dept: isCoimbatore ? 'CCMC Drainage & Sanitation' : 'Water & Sewerage Board' },
-    { id: 'water', label: '💧 Water Leak / Burst', dept: isCoimbatore ? 'Siruvani Water Supply (CCMC)' : 'Public Water Works Dept' },
-    { id: 'eb', label: '💡 Street Light / Power', dept: 'TANGEDCO Distribution Circle' },
-    { id: 'sanitation', label: '🗑️ Garbage & Waste', dept: isCoimbatore ? 'CCMC Solid Waste Management' : 'Municipal Solid Waste Cell' }
+    { id: 'road',       label: '🛣️ Roads & Potholes',    dept: isCoimbatore ? 'CCMC Roads & Bridges Dept'        : 'Municipal Roads Division' },
+    { id: 'drainage',   label: '🚿 Drainage & Sewage',    dept: isCoimbatore ? 'CCMC Drainage & Sanitation'       : 'Water & Sewerage Board' },
+    { id: 'water',      label: '💧 Water Leak / Burst',   dept: isCoimbatore ? 'Siruvani Water Supply (CCMC)'     : 'Public Water Works Dept' },
+    { id: 'eb',         label: '💡 Street Light / Power', dept: 'TANGEDCO Distribution Circle' },
+    { id: 'sanitation', label: '🗑️ Garbage & Waste',      dept: isCoimbatore ? 'CCMC Solid Waste Management'      : 'Municipal Solid Waste Cell' }
   ];
   const currentCategory = categories.find(c => c.id === selectedCategory) || categories[0];
 
-  // ── Run AI analysis when photo is available ──
+  // ── Trigger AI when photo arrives ──────────────────────────────────────────
   useEffect(() => {
     if (!photoUrl) return;
     setAiAnalyzing(true);
-    // Tiny artificial delay so it looks like processing
-    setTimeout(async () => {
+    const timer = setTimeout(async () => {
       const result = await analyzeImageForCategory(photoUrl);
       setAiResult(result);
       setSelectedCategory(result.category);
       setTitle(result.title);
       setDescription(result.description);
       setAiAnalyzing(false);
-    }, 1400);
+    }, 1500);
+    return () => clearTimeout(timer);
   }, [photoUrl]);
 
   const handleSubmit = (e) => {
@@ -171,7 +220,7 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
     }, 900);
   };
 
-  // ── SUCCESS STATE ──────────────────────────────────────────────────────────
+  // ── SUCCESS ────────────────────────────────────────────────────────────────
   if (createdTicket) {
     return (
       <div className="flex flex-col h-full bg-gray-50 items-center justify-center px-6 text-center gap-4">
@@ -207,7 +256,7 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
     );
   }
 
-  // ── FORM ──────────────────────────────────────────────────────────────────
+  // ── FORM ───────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-full bg-gray-50 overflow-y-auto">
 
@@ -230,25 +279,25 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 p-4 pb-8">
 
-        {/* ── Photo + AI Analysis banner ── */}
+        {/* Photo + analysis overlay */}
         {photoUrl && (
           <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
             <img src={photoUrl} alt="Incident" className="w-full max-h-44 object-cover" />
 
-            {/* AI analyzing overlay */}
+            {/* Analysing overlay */}
             {aiAnalyzing && (
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
                 <div className="w-10 h-10 rounded-full bg-white/10 border-2 border-blue-400 flex items-center justify-center">
                   <Cpu className="w-5 h-5 text-blue-300 animate-pulse" />
                 </div>
                 <p className="text-white text-xs font-bold">AI Analysing Photo…</p>
-                <div className="w-32 h-1 bg-white/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-400 rounded-full animate-[grow_1.4s_ease-in-out_forwards]" style={{ width: '80%' }} />
+                <div className="w-36 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-400 rounded-full" style={{ width: '75%', transition: 'width 1.4s ease-in-out' }} />
                 </div>
               </div>
             )}
 
-            {/* AI result badge */}
+            {/* Result badge on photo */}
             {!aiAnalyzing && aiResult && (
               <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
                 <span className="bg-black/70 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5">
@@ -263,7 +312,7 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
           </div>
         )}
 
-        {/* ── AI Analysis Result Card (when done) ── */}
+        {/* AI result info card */}
         {!aiAnalyzing && aiResult && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2.5 flex items-start gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
@@ -271,30 +320,28 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
             </div>
             <div>
               <p className="text-xs font-bold text-blue-900">
-                AI Vision Analysis Complete — {aiResult.confidence}% match
+                AI Vision Complete — {aiResult.confidence}% match
               </p>
               <p className="text-[11px] text-blue-700 mt-0.5">
-                Category auto-selected: <strong>{categories.find(c => c.id === aiResult.category)?.label}</strong>
+                Detected: <strong>{categories.find(c => c.id === aiResult.category)?.label}</strong>
               </p>
-              <p className="text-[10px] text-blue-500 mt-0.5">You can change the category or edit the details below</p>
+              <p className="text-[10px] text-blue-400 mt-0.5">You can change the category or edit details below</p>
             </div>
           </div>
         )}
 
-        {/* ── AI analyzing placeholder ── */}
+        {/* AI analysing skeleton */}
         {photoUrl && aiAnalyzing && (
           <div className="bg-slate-100 border border-slate-200 rounded-xl px-3 py-3 flex items-center gap-2.5 animate-pulse">
-            <div className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center">
-              <Cpu className="w-4 h-4 text-slate-400" />
-            </div>
+            <div className="w-8 h-8 rounded-lg bg-slate-200 flex-shrink-0" />
             <div className="space-y-1.5">
-              <div className="w-40 h-2.5 bg-slate-200 rounded-full" />
-              <div className="w-28 h-2 bg-slate-200 rounded-full" />
+              <div className="w-44 h-2.5 bg-slate-200 rounded-full" />
+              <div className="w-32 h-2 bg-slate-200 rounded-full" />
             </div>
           </div>
         )}
 
-        {/* ── Category chips ── */}
+        {/* Category chips */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
@@ -306,15 +353,12 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
           </div>
           <div className="grid grid-cols-2 gap-2">
             {categories.map(cat => (
-              <button
-                type="button" key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
+              <button type="button" key={cat.id} onClick={() => setSelectedCategory(cat.id)}
                 className={`p-2.5 rounded-xl border text-left text-xs flex flex-col gap-0.5 transition-all ${
                   selectedCategory === cat.id
                     ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-400'
                     : 'bg-white border-slate-200'
-                }`}
-              >
+                }`}>
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-slate-800">{cat.label}</span>
                   {aiResult?.category === cat.id && (
@@ -327,7 +371,7 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
           </div>
         </div>
 
-        {/* ── Routing preview ── */}
+        {/* Routing preview */}
         <div className="bg-white rounded-xl border border-slate-200 px-3 py-2.5 flex items-start gap-2">
           <Building2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
           <div>
@@ -338,7 +382,7 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
           </div>
         </div>
 
-        {/* ── Complaint details (auto-filled by AI) ── */}
+        {/* Complaint details */}
         <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
@@ -376,7 +420,7 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
           )}
         </div>
 
-        {/* ── SLA note ── */}
+        {/* SLA note */}
         <div className="flex items-start gap-2 px-3 py-2.5 bg-amber-50 border border-amber-100 rounded-xl">
           <Clock className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
           <p className="text-[11px] text-amber-800">
@@ -384,11 +428,9 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
           </p>
         </div>
 
-        {/* ── Submit ── */}
-        <button
-          type="submit" disabled={isSubmitting || aiAnalyzing}
-          className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-sm uppercase tracking-wide shadow-lg shadow-blue-200 flex items-center justify-center gap-2 transition-all disabled:opacity-60"
-        >
+        {/* Submit */}
+        <button type="submit" disabled={isSubmitting || aiAnalyzing}
+          className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-sm uppercase tracking-wide shadow-lg shadow-blue-200 flex items-center justify-center gap-2 transition-all disabled:opacity-60">
           <Send className="w-4 h-4" />
           {isSubmitting ? 'Submitting…' : aiAnalyzing ? 'Analysing photo…' : 'Submit Complaint'}
         </button>

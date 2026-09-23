@@ -229,44 +229,70 @@ export default function GISMap({ onSelectTicket }) {
   return (
     <div className="relative w-full h-full min-h-[450px] flex-1 overflow-hidden bg-[#F1F5F9] flex flex-col font-sans">
       
-      {/* Ultra-Simple, Clean Floating Map Controls */}
-      <div className="absolute top-2.5 left-2.5 right-2.5 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+      {/* Clean, Non-Overlapping Floating Map Controls */}
+      <div className="absolute top-2.5 left-2.5 right-2.5 z-[1000] flex flex-col gap-1.5 pointer-events-none">
         
-        {/* Left: Prominent Map Mode Toggle (Standard vs Satellite) */}
-        <div className="pointer-events-auto bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200 shadow-md flex items-center space-x-1">
-          <button
-            type="button"
-            onClick={() => setMapType('standard')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              mapType === 'standard'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 bg-slate-50'
-            }`}
-          >
-            <span>🗺️ Map</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMapType('satellite')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              mapType === 'satellite'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 bg-slate-50'
-            }`}
-          >
-            <span>🛰️ Satellite</span>
-          </button>
+        {/* Row 1: Map Mode Switcher + Location & Recenter */}
+        <div className="flex items-center justify-between gap-1.5 pointer-events-auto">
+          {/* Map / Satellite Toggle */}
+          <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-md flex items-center space-x-0.5">
+            <button
+              type="button"
+              onClick={() => setMapType('standard')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                mapType === 'standard'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span>🗺️ Street</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapType('satellite')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                mapType === 'satellite'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span>🛰️ Satellite</span>
+            </button>
+          </div>
+
+          {/* Right: GPS Location badge & Recenter */}
+          <div className="flex items-center gap-1">
+            <div className="bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-2xl border border-slate-200/90 shadow-md flex items-center gap-1.5 text-xs font-bold text-slate-800">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="truncate max-w-[80px]">{userLocation?.city || 'Coimbatore'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (userLocation?.lat) {
+                  setMapCenter([userLocation.lat, userLocation.long], 14);
+                } else {
+                  setMapCenter([11.0168, 76.9558], 13);
+                }
+                setCategoryFilter('all');
+              }}
+              className="p-2 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 text-slate-600 hover:text-blue-600 shadow-md active:scale-95 transition-all"
+              title="Recenter on My Location"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        {/* Right: Clean Incident Filter Chips & Reset */}
-        <div className="pointer-events-auto flex items-center space-x-1.5">
-          <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200 shadow-md flex items-center space-x-1">
+        {/* Row 2: Category Filter Chips (Single horizontal strip) */}
+        <div className="flex items-center gap-1 pointer-events-auto overflow-x-auto pb-0.5">
+          <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-md flex items-center gap-1">
             <button
               type="button"
               onClick={() => setCategoryFilter('all')}
-              className={`px-2.5 py-1.2 rounded-xl text-xs font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex-shrink-0 ${
                 categoryFilter === 'all'
-                  ? 'bg-slate-900 text-white'
+                  ? 'bg-slate-900 text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -275,42 +301,39 @@ export default function GISMap({ onSelectTicket }) {
             <button
               type="button"
               onClick={() => setCategoryFilter('EMERGENCY')}
-              className={`px-2.5 py-1.2 rounded-xl text-xs font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex-shrink-0 flex items-center gap-1 ${
                 categoryFilter === 'EMERGENCY'
                   ? 'bg-red-600 text-white shadow-xs'
                   : 'bg-red-50 text-red-600 hover:bg-red-100'
               }`}
             >
-              🚨 SOS ({emergencyCount})
+              <span>🚨 SOS ({emergencyCount})</span>
             </button>
             <button
               type="button"
               onClick={() => setCategoryFilter('CIVIC')}
-              className={`px-2.5 py-1.2 rounded-xl text-xs font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex-shrink-0 flex items-center gap-1 ${
                 categoryFilter === 'CIVIC'
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
               }`}
             >
-              📋 Civic ({civicCount})
+              <span>📋 Civic ({civicCount})</span>
             </button>
+            {weatherCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setCategoryFilter('WEATHER')}
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex-shrink-0 flex items-center gap-1 ${
+                  categoryFilter === 'WEATHER'
+                    ? 'bg-cyan-600 text-white shadow-xs'
+                    : 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100'
+                }`}
+              >
+                <span>🌧️ ({weatherCount})</span>
+              </button>
+            )}
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (userLocation?.lat) {
-                setMapCenter([userLocation.lat, userLocation.long], 14);
-              } else {
-                setMapCenter([11.0168, 76.9558], 13);
-              }
-              setCategoryFilter('all');
-            }}
-            className="p-2 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 text-slate-600 hover:text-slate-900 shadow-md transition-colors"
-            title="Recenter on My Location"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
         </div>
 
       </div>
