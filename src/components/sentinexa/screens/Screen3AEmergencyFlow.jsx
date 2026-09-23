@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useCivicStore } from '../../../store/useCivicStore';
 import { 
   AlertOctagon, PhoneCall, ShieldAlert, Flame, Send,
-  Stethoscope, ArrowLeft, MapPin, Radio, Check
+  Stethoscope, ArrowLeft, MapPin, Radio, Check, Mail
 } from 'lucide-react';
 
 export default function Screen3AEmergencyFlow({ photoData, capturedData, onBack, onComplete, onDispatched }) {
   const effectiveData = photoData || capturedData;
   const { nearbyHospitals, addIncident } = useCivicStore();
+  const prototypeSettings = useCivicStore(state => state.prototypeSettings);
+  const secondaryEmail = prototypeSettings?.secondaryEmail;
   const [dispatchStage, setDispatchStage] = useState(0);
   const [selectedHospital, setSelectedHospital] = useState(null);
 
@@ -168,6 +170,20 @@ export default function Screen3AEmergencyFlow({ photoData, capturedData, onBack,
                 </span>
               </div>
             ))}
+
+            {/* Prototype Alert Sent to Secondary Mail */}
+            {dispatchStage === 3 && (
+              <div className="mt-3 pt-3 border-t border-red-100 text-left space-y-1">
+                <div className="flex items-center gap-1.5 text-red-900 font-bold text-xs">
+                  <Mail className="w-3.5 h-3.5 text-red-600" />
+                  <span>Prototype SOS Alert Dispatched</span>
+                </div>
+                <p className="text-[11px] text-red-800 leading-snug">
+                  Emergency telemetry & GPS coordinates automatically routed to your secondary mail:
+                  <strong className="block text-red-950 font-mono mt-0.5">{secondaryEmail || 'your secondary mail'}</strong>
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

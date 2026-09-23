@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Globe, Bell, Shield, Award, ChevronRight, Smartphone, MapPin, 
-  Zap, Play, Copy, Check, ExternalLink, RefreshCw
+  Zap, Play, Copy, Check, RefreshCw, Mail, MessageSquare, Send
 } from 'lucide-react';
 import { useCivicStore } from '../../../store/useCivicStore';
 import { n8nService } from '../../../services/n8nService';
@@ -47,41 +47,60 @@ const N8N_WORKFLOW_TEMPLATE = {
       "name": "Is Priority 1 Emergency?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [480, 300]
+      "position": [480, 240]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.body?.recipientEmail || $json.body?.secondaryEmail || 'saravanaprasanna7@gmail.com' }}",
+        "subject": "={{ $json.body?.emailSubject || '[SENTINEXA ALERT] Problem Reported' }}",
+        "text": "={{ $json.body?.emailMessage || 'Incident report dispatched' }}",
+        "html": "={{ $json.body?.emailHtml || '<p>Problem reported via Sentinexa</p>' }}",
+        "options": {}
+      },
+      "id": "send-email-secondary-node",
+      "name": "Send Alert to Secondary Mail",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [480, 440]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: true, status: 'DISPATCHED_TO_EMERGENCY_MESH', ticketId: $json.body?.ticketId || $json.ticketId, targetHospital: 'CMCH Trauma Care', eta: '3 mins', timestamp: new Date().toISOString() }) }}",
+        "responseBody": "={{ JSON.stringify({ success: true, status: 'DISPATCHED_TO_EMERGENCY_MESH', ticketId: $json.body?.ticketId || $json.ticketId, targetHospital: 'Coimbatore Medical College Hospital (CMCH)', eta: '3 mins', secondaryEmailAlertSent: true, timestamp: new Date().toISOString() }) }}",
         "options": {}
       },
       "id": "respond-emergency-ack",
       "name": "Respond SOS Dispatched",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [760, 200]
+      "position": [760, 160]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: true, status: 'ROUTED_TO_MUNICIPAL_WARD_SLA_48H', ticketId: $json.body?.ticketId || $json.ticketId, department: $json.body?.department || 'CCMC Infrastructure & Roads Wing', slaHours: 48, timestamp: new Date().toISOString() }) }}",
+        "responseBody": "={{ JSON.stringify({ success: true, status: 'ROUTED_TO_MUNICIPAL_WARD_SLA_48H', ticketId: $json.body?.ticketId || $json.ticketId, department: $json.body?.department || $json.department || 'CCMC Infrastructure & Roads Wing', slaHours: 48, secondaryEmailAlertSent: true, escalationDate: new Date(Date.now() + 48*3600*1000).toISOString(), timestamp: new Date().toISOString() }) }}",
         "options": {}
       },
       "id": "respond-civic-ack",
-      "name": "Respond Civic Routed",
+      "name": "Respond Civic Grievance Routed",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [760, 420]
+      "position": [760, 320]
     }
   ],
   "connections": {
     "Sentinexa Webhook": {
-      "main": [[{ "node": "Is Priority 1 Emergency?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          { "node": "Is Priority 1 Emergency?", "type": "main", "index": 0 },
+          { "node": "Send Alert to Secondary Mail", "type": "main", "index": 0 }
+        ]
+      ]
     },
     "Is Priority 1 Emergency?": {
       "main": [
         [{ "node": "Respond SOS Dispatched", "type": "main", "index": 0 }],
-        [{ "node": "Respond Civic Routed", "type": "main", "index": 0 }]
+        [{ "node": "Respond Civic Grievance Routed", "type": "main", "index": 0 }]
       ]
     }
   },
@@ -94,6 +113,8 @@ export default function Screen7ProfileSettings({ onBack }) {
   const n8nConfig = useCivicStore(state => state.n8nConfig);
   const updateN8nConfig = useCivicStore(state => state.updateN8nConfig);
   const addN8nLog = useCivicStore(state => state.addN8nLog);
+  const prototypeSettings = useCivicStore(state => state.prototypeSettings);
+  const setPrototypeSettings = useCivicStore(state => state.setPrototypeSettings);
 
   const [lang, setLang] = useState('en');
   const [notifs, setNotifs] = useState({
@@ -102,6 +123,12 @@ export default function Screen7ProfileSettings({ onBack }) {
     agents: false
   });
   const [offlineSync, setOfflineSync] = useState(true);
+
+  // Prototype Email & Phone settings
+  const [secondaryEmail, setSecondaryEmail] = useState(prototypeSettings?.secondaryEmail || '');
+  const [secondaryPhone, setSecondaryPhone] = useState(prototypeSettings?.secondaryPhone || '');
+  const [protoSaved, setProtoSaved] = useState(false);
+  const [protoTestSent, setProtoTestSent] = useState(false);
 
   // n8n states
   const [webhookUrl, setWebhookUrl] = useState(n8nConfig?.complaintWebhookUrl || 'https://n8n.example.com/webhook/civic-complaint-dispatch');
@@ -125,6 +152,40 @@ export default function Screen7ProfileSettings({ onBack }) {
   const district = userLocation?.district || 'Coimbatore';
   const isTamil = lang === 'ta';
 
+  const handleSavePrototype = () => {
+    setPrototypeSettings({
+      secondaryEmail,
+      secondaryPhone
+    });
+    setProtoSaved(true);
+    setTimeout(() => setProtoSaved(false), 2500);
+  };
+
+  const handleSendTestProtoAlert = async () => {
+    setProtoTestSent(true);
+
+    const testPayload = {
+      event: 'TEST_PROTOTYPE_ALERT',
+      type: 'CIVIC',
+      ticketId: 'TEST-' + Math.floor(1000 + Math.random() * 9000),
+      title: 'Road Damage & Pothole Alert (Prototype Test)',
+      description: 'Prototype test incident: Pothole detected in Coimbatore. Forwarded to secondary mail.',
+      recipientEmail: secondaryEmail || 'saravanaprasanna7@gmail.com',
+      secondaryEmail: secondaryEmail || 'saravanaprasanna7@gmail.com',
+      secondaryPhone: secondaryPhone || '',
+      emailSubject: '[SENTINEXA PROTOTYPE TEST] Problem Dispatched to Secondary Mail',
+      emailMessage: `Test incident report successfully generated and sent to: ${secondaryEmail || 'your secondary mail'}`,
+      timestamp: new Date().toISOString()
+    };
+
+    await n8nService.triggerWebhook(webhookUrl, testPayload, {
+      ...n8nConfig,
+      simulationMode
+    });
+
+    setTimeout(() => setProtoTestSent(false), 3000);
+  };
+
   const handleSaveN8n = () => {
     updateN8nConfig({
       complaintWebhookUrl: webhookUrl,
@@ -144,6 +205,9 @@ export default function Screen7ProfileSettings({ onBack }) {
       type: 'CIVIC',
       ticketId: 'TEST-' + Math.floor(1000 + Math.random() * 9000),
       title: 'Connectivity Ping from Sentinexa',
+      recipientEmail: secondaryEmail || 'saravanaprasanna7@gmail.com',
+      secondaryEmail: secondaryEmail || 'saravanaprasanna7@gmail.com',
+      emailSubject: '[SENTINEXA ALERT] Connectivity Test Ping',
       timestamp: new Date().toISOString()
     };
 
@@ -178,7 +242,7 @@ export default function Screen7ProfileSettings({ onBack }) {
         <div className="flex items-center justify-between">
           <h2 className="font-black text-slate-900 text-base flex items-center gap-2">
             <Shield className="w-4 h-4 text-blue-600" />
-            {isTamil ? 'அமைப்புகள் & n8n தானியங்கு' : 'Settings & n8n Automation'}
+            {isTamil ? 'அமைப்புகள் & அஞ்சல் வழிநடத்தல்' : 'Settings & Alert Routing'}
           </h2>
           <button onClick={onBack}
             className="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl font-bold border border-slate-200">
@@ -205,6 +269,96 @@ export default function Screen7ProfileSettings({ onBack }) {
           <span className="ml-auto px-2.5 py-1 rounded-full bg-white/20 text-white text-[10px] font-bold">
             🔥 42d
           </span>
+        </div>
+
+        {/* ── PROTOTYPE SECONDARY MAIL & MESSAGE ROUTING CARD ── */}
+        <div className="bg-white rounded-2xl border border-blue-200 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
+                <Mail className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                  Prototype Secondary Mail & Alerts
+                </h3>
+                <p className="text-[10px] text-slate-500">Auto-routes all problem reports & photo evidence</p>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+              Prototype Mode
+            </span>
+          </div>
+
+          <div className="p-3.5 space-y-3">
+            {/* Secondary Email Input */}
+            <div>
+              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-blue-600" />
+                Secondary Email Address (Where alerts will be sent)
+              </label>
+              <input
+                type="email"
+                value={secondaryEmail}
+                onChange={(e) => setSecondaryEmail(e.target.value)}
+                placeholder="your-secondary-mail@gmail.com"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
+              />
+              <p className="text-[10px] text-slate-500 mt-1">
+                Every problem report (photo, GPS coordinates, department, AI diagnosis) will be sent to this email.
+              </p>
+            </div>
+
+            {/* Secondary Phone Input */}
+            <div>
+              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                Secondary Phone / SMS (Optional)
+              </label>
+              <input
+                type="tel"
+                value={secondaryPhone}
+                onChange={(e) => setSecondaryPhone(e.target.value)}
+                placeholder="+91 98765 43210"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            {/* Save & Test Buttons */}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={handleSavePrototype}
+                className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>{protoSaved ? 'Saved Successfully! ✓' : 'Save Secondary Mail'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSendTestProtoAlert}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 flex items-center gap-1 transition-colors"
+                title="Send a sample problem alert to your secondary mail"
+              >
+                <Send className="w-3.5 h-3.5 text-blue-600" />
+                <span>{protoTestSent ? 'Test Alert Sent! ✓' : 'Test Alert'}</span>
+              </button>
+            </div>
+
+            {/* Quick Mailto Direct Link */}
+            {secondaryEmail && (
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-center justify-between">
+                <span>Active Target: <strong className="text-blue-700">{secondaryEmail}</strong></span>
+                <a
+                  href={`mailto:${secondaryEmail}?subject=${encodeURIComponent('[SENTINEXA ALERT] Prototype Problem Notification')}&body=${encodeURIComponent('This is a verified prototype problem report from Sentinexa Civic Intelligence Mesh.')}`}
+                  className="text-blue-600 font-bold hover:underline"
+                >
+                  Send Direct Mail ↗
+                </a>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── n8n Automation Engine Card ── */}
@@ -301,7 +455,7 @@ export default function Screen7ProfileSettings({ onBack }) {
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold text-slate-800">Ready n8n Workflow JSON</p>
-                <p className="text-[10px] text-slate-400">Import directly into your n8n canvas</p>
+                <p className="text-[10px] text-slate-400">Includes Send Email to Secondary Mail node</p>
               </div>
               <button
                 type="button"

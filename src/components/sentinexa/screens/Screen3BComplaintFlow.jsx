@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCivicStore } from '../../../store/useCivicStore';
 import { 
   FileText, Send, ArrowLeft, Building2, CheckCircle2, Clock, 
-  MapPin, Sparkles, Languages, Cpu
+  MapPin, Sparkles, Languages, Cpu, Mail
 } from 'lucide-react';
 
 // ── AI Vision Analysis — multi-region center-vs-edge brightness ───────────────
@@ -151,6 +151,8 @@ function analyzeImageForCategory(dataUrl) {
 export default function Screen3BComplaintFlow({ photoData, capturedData, onBack, onComplete, onSubmitSuccess }) {
   const effectiveData = photoData || capturedData;
   const { addIncident } = useCivicStore();
+  const prototypeSettings = useCivicStore(state => state.prototypeSettings);
+  const secondaryEmail = prototypeSettings?.secondaryEmail;
 
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState(null);
@@ -241,6 +243,31 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
             </p>
           )}
         </div>
+        {/* Prototype Email & Message Alert Confirmation */}
+        <div className="w-full bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3 text-left space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-blue-600" />
+              Prototype Alert Dispatched
+            </span>
+            <span className="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+              n8n Automated
+            </span>
+          </div>
+          <p className="text-[11px] text-blue-800 leading-relaxed">
+            Incident memo, photo, and GPS coordinates routed to secondary mail:
+            <strong className="block text-blue-950 font-mono mt-0.5">{secondaryEmail || 'your secondary mail'}</strong>
+          </p>
+          <a
+            href={`mailto:${secondaryEmail || ''}?subject=${encodeURIComponent('[SENTINEXA PROTOTYPE] Problem Alert: ' + (createdTicket.title || 'Civic Issue'))}&body=${encodeURIComponent(
+              `Ticket ID: #${createdTicket.id}\nCategory: ${createdTicket.category}\nDepartment: ${createdTicket.department}\nLocation: ${createdTicket.address} (Lat: ${createdTicket.lat}, Long: ${createdTicket.long})\nGoogle Maps: https://www.google.com/maps?q=${createdTicket.lat},${createdTicket.long}\n\nProblem Description:\n${createdTicket.description}\n\nAI Truth Confidence: ${createdTicket.aiConfidence || 94}%\n\n---\nSent via Sentinexa Prototype Mesh`
+            )}`}
+            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 hover:underline pt-0.5"
+          >
+            <span>Open Email Draft in Mail App</span> ↗
+          </a>
+        </div>
+
         <div className="w-full bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-left">
           <div className="flex items-center gap-2 text-amber-800 font-bold text-xs mb-1">
             <Clock className="w-4 h-4" /> 48-Hour Resolution Guarantee

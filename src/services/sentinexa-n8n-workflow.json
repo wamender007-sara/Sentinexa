@@ -42,31 +42,45 @@
       "name": "Is Priority 1 Emergency?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [480, 300]
+      "position": [480, 240]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.body?.recipientEmail || $json.body?.secondaryEmail || 'saravanaprasanna7@gmail.com' }}",
+        "subject": "={{ $json.body?.emailSubject || '[SENTINEXA ALERT] Problem Reported' }}",
+        "text": "={{ $json.body?.emailMessage || 'Incident report dispatched' }}",
+        "html": "={{ $json.body?.emailHtml || '<p>Problem reported via Sentinexa</p>' }}",
+        "options": {}
+      },
+      "id": "send-email-secondary-node",
+      "name": "Send Alert to Secondary Mail",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [480, 440]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: true, status: 'DISPATCHED_TO_EMERGENCY_MESH', ticketId: $json.body?.ticketId || $json.ticketId, targetHospital: 'Coimbatore Medical College Hospital (CMCH)', eta: '3 mins', units: ['108 Ambulance Unit #4', 'Coimbatore City Police PCR'], timestamp: new Date().toISOString() }) }}",
+        "responseBody": "={{ JSON.stringify({ success: true, status: 'DISPATCHED_TO_EMERGENCY_MESH', ticketId: $json.body?.ticketId || $json.ticketId, targetHospital: 'Coimbatore Medical College Hospital (CMCH)', eta: '3 mins', secondaryEmailAlertSent: true, timestamp: new Date().toISOString() }) }}",
         "options": {}
       },
       "id": "respond-emergency-ack",
       "name": "Respond SOS Dispatched",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [760, 200]
+      "position": [760, 160]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: true, status: 'ROUTED_TO_MUNICIPAL_WARD_SLA_48H', ticketId: $json.body?.ticketId || $json.ticketId, department: $json.body?.department || $json.department || 'CCMC Infrastructure & Roads Wing', slaHours: 48, escalationDate: new Date(Date.now() + 48*3600*1000).toISOString(), timestamp: new Date().toISOString() }) }}",
+        "responseBody": "={{ JSON.stringify({ success: true, status: 'ROUTED_TO_MUNICIPAL_WARD_SLA_48H', ticketId: $json.body?.ticketId || $json.ticketId, department: $json.body?.department || $json.department || 'CCMC Infrastructure & Roads Wing', slaHours: 48, secondaryEmailAlertSent: true, escalationDate: new Date(Date.now() + 48*3600*1000).toISOString(), timestamp: new Date().toISOString() }) }}",
         "options": {}
       },
       "id": "respond-civic-ack",
       "name": "Respond Civic Grievance Routed",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [760, 420]
+      "position": [760, 320]
     }
   ],
   "connections": {
@@ -75,6 +89,11 @@
         [
           {
             "node": "Is Priority 1 Emergency?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Alert to Secondary Mail",
             "type": "main",
             "index": 0
           }
