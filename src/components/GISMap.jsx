@@ -15,7 +15,8 @@ import {
   ExternalLink,
   Zap,
   Activity,
-  Compass
+  Compass,
+  Camera
 } from 'lucide-react';
 
 // Marker Icon Generator
@@ -124,6 +125,7 @@ export default function GISMap({ onSelectTicket }) {
     setMapCenter,
     selectedIncident,
     setSelectedIncident, 
+    openGeoCam,
     triggerEmergencyModal,
     language 
   } = useCivicStore();
@@ -301,6 +303,16 @@ export default function GISMap({ onSelectTicket }) {
               className="w-full text-xs text-[#14213D] placeholder-[#94A3B8] focus:outline-none bg-transparent"
             />
           </div>
+
+          {/* Geo-Cam Shutter Button on Map */}
+          <button
+            onClick={openGeoCam}
+            className="px-3 py-1.5 rounded-2xl bg-[#0B2E59] hover:bg-[#14213D] text-white text-xs font-bold shadow-md flex items-center space-x-1.5 transition-all active:scale-95 shrink-0"
+            title="Open Geo-Cam with live GPS Latitude & Longitude stamp"
+          >
+            <Camera className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Geo-Cam</span>
+          </button>
 
           <button
             onClick={() => {

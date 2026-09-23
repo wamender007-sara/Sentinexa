@@ -1,41 +1,98 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCivicStore } from '../store/useCivicStore';
-import { X, Camera, MapPin, AlertOctagon, FileText, CheckCircle, RefreshCw, Upload, ShieldAlert } from 'lucide-react';
+import { 
+  X, 
+  Camera, 
+  MapPin, 
+  AlertOctagon, 
+  FileText, 
+  RefreshCw, 
+  Upload, 
+  ShieldAlert, 
+  SwitchCamera, 
+  Compass, 
+  CheckCircle2,
+  Crosshair
+} from 'lucide-react';
 
 export default function GeoCamModal() {
   const { isGeoCamOpen, closeGeoCam, triggerEmergencyModal, openComplaintModal, language } = useCivicStore();
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
+  
   const [stream, setStream] = useState(null);
+  const [facingMode, setFacingMode] = useState('environment'); // 'environment' | 'user'
   const [capturedImage, setCapturedImage] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
+  const [isLocating, setIsLocating] = useState(false);
+  
   const [location, setLocation] = useState({
     lat: 13.0827,
     long: 80.2707,
-    accuracy: 5,
-    address: '2nd Avenue, Anna Nagar, Chennai - 600040',
+    accuracy: 4,
+    altitude: 12,
+    address: 'Anna Nagar, Chennai, Tamil Nadu - 600040',
     timestamp: new Date().toISOString()
   });
-  const [isLocating, setIsLocating] = useState(false);
 
-  // Initialize camera & GPS when modal opens
+  // Start camera and GPS when modal opens
   useEffect(() => {
+    let watchId = null;
     if (isGeoCamOpen) {
-      startCamera();
+      startCamera(facingMode);
       fetchGPSLocation();
+
+      // Live GPS watcher
+      if ('geolocation' in navigator) {
+        watchId = navigator.geolocation.watchPosition(
+          (pos) => {
+            setLocation(prev => ({
+              ...prev,
+              lat: pos.coords.latitude,
+              long: pos.coords.longitude,
+              accuracy: Math.round(pos.coords.accuracy || 4),
+              altitude: Math.round(pos.coords.altitude || 10),
+              timestamp: new Date().toISOString()
+            }));
+          },
+          (err) => console.warn('GPS Watcher notice:', err.message),
+          { enableHighAccuracy: true, maximumAge: 1000 }
+        );
+      }
     } else {
       stopCamera();
+      setCapturedImage(null);
+      setCameraError(null);
     }
-    return () => stopCamera();
-  }, [isGeoCamOpen]);
 
-  const startCamera = async () => {
+    return () => {
+      stopCamera();
+      if (watchId !== null && 'geolocation' in navigator) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, [isGeoCamOpen, facingMode]);
+
+  const startCamera = async (facing) => {
+    setCameraError(null);
+    stopCamera();
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: facing,
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      });
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
     } catch (err) {
-      console.warn('Camera access not granted or not supported in sandbox. Using simulated camera canvas preview:', err);
+      console.warn('Camera access error or restricted:', err);
+      setCameraError('Camera access denied or unavailable. You can take a snapshot simulation or upload a photo.');
     }
   };
 
@@ -46,48 +103,151 @@ export default function GeoCamModal() {
     }
   };
 
+  const toggleFacingMode = () => {
+    const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextMode);
+  };
+
   const fetchGPSLocation = () => {
     setIsLocating(true);
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          const lat = pos.coords.latitude;
+          const long = pos.coords.longitude;
+          const accuracy = Math.round(pos.coords.accuracy || 3);
+
           setLocation({
-            lat: pos.coords.latitude,
-            long: pos.coords.longitude,
-            accuracy: Math.round(pos.coords.accuracy),
-            address: `Lat: ${pos.coords.latitude.toFixed(4)}, Long: ${pos.coords.longitude.toFixed(4)} (GPS Verified)`,
+            lat,
+            long,
+            accuracy,
+            altitude: Math.round(pos.coords.altitude || 8),
+            address: `Lat: ${lat.toFixed(5)}, Long: ${long.toFixed(5)} (Live GPS Fix)`,
             timestamp: new Date().toISOString()
           });
           setIsLocating(false);
         },
         (err) => {
-          console.warn('Geolocation fallback to default Tamil Nadu coordinates:', err);
+          console.warn('Geolocation fallback to Chennai default coordinates:', err);
           setIsLocating(false);
         },
-        { enableHighAccuracy: true, timeout: 5000 }
+        { enableHighAccuracy: true, timeout: 6000 }
       );
     } else {
       setIsLocating(false);
     }
   };
 
-  const snapPhoto = () => {
-    if (videoRef.current && stream) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth || 640;
-      canvas.height = videoRef.current.videoHeight || 480;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-      setCapturedImage(canvas.toDataURL('image/jpeg'));
+  // Snaps photo and burns permanent GPS watermark into the canvas bitmap
+  const snapPhotoWithGPSWatermark = () => {
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    const width = (video && video.videoWidth) ? video.videoWidth : 800;
+    const height = (video && video.videoHeight) ? video.videoHeight : 600;
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    if (video && stream) {
+      ctx.drawImage(video, 0, 0, width, height);
     } else {
-      // Simulated sample photo if camera unavailable
-      setCapturedImage('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80');
+      // Draw simulated camera viewfinder frame
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, width, height);
+
+      // Grid guidelines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(width / 3, 0); ctx.lineTo(width / 3, height);
+      ctx.moveTo((width / 3) * 2, 0); ctx.lineTo((width / 3) * 2, height);
+      ctx.moveTo(0, height / 3); ctx.lineTo(width, height / 3);
+      ctx.moveTo(0, (height / 3) * 2); ctx.lineTo(width, (height / 3) * 2);
+      ctx.stroke();
+
+      // Camera lens center text
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 20px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('[GEO-CAM CAPTURED SCENE]', width / 2, height / 2 - 20);
+      ctx.font = '14px sans-serif';
+      ctx.fillText('Live Geotagged Civic Incident Verification Photo', width / 2, height / 2 + 15);
     }
+
+    // --- BURN REAL GPS WATERMARK OVERLAY ON IMAGE ---
+    const bannerHeight = 85;
+    ctx.fillStyle = 'rgba(11, 26, 46, 0.88)';
+    ctx.fillRect(0, height - bannerHeight, width, bannerHeight);
+
+    // Accent line
+    ctx.fillStyle = '#1769E0';
+    ctx.fillRect(0, height - bannerHeight, width, 3);
+
+    // GPS Text formatting
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0EA5C6';
+    ctx.font = 'bold 15px monospace';
+    const latStr = `${Math.abs(location.lat).toFixed(6)}° ${location.lat >= 0 ? 'N' : 'S'}`;
+    const longStr = `${Math.abs(location.long).toFixed(6)}° ${location.long >= 0 ? 'E' : 'W'}`;
+    ctx.fillText(`📍 LAT: ${latStr}  |  LONG: ${longStr} (±${location.accuracy}m)`, 20, height - bannerHeight + 25);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '12px sans-serif';
+    const timeStr = new Date().toLocaleString('en-IN', { timeZoneName: 'short' });
+    ctx.fillText(`🕒 ${timeStr}  •  ${location.address}`, 20, height - bannerHeight + 48);
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText(`🛡️ CIVICLOOP GEO-CAM VERIFIED INCIDENT REPORT  [TAMIL NADU MUNICIPAL GRID]`, 20, height - bannerHeight + 70);
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    setCapturedImage(dataUrl);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        // Burn GPS Watermark on uploaded photo as well
+        const bannerHeight = 80;
+        ctx.fillStyle = 'rgba(11, 26, 46, 0.9)';
+        ctx.fillRect(0, img.height - bannerHeight, img.width, bannerHeight);
+        ctx.fillStyle = '#1769E0';
+        ctx.fillRect(0, img.height - bannerHeight, img.width, 3);
+
+        ctx.fillStyle = '#0EA5C6';
+        ctx.font = 'bold 15px monospace';
+        ctx.fillText(`📍 LAT: ${location.lat.toFixed(6)}°  |  LONG: ${location.long.toFixed(6)}° (±${location.accuracy}m)`, 20, img.height - bannerHeight + 25);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`🕒 ${new Date().toLocaleString()}  •  ${location.address}`, 20, img.height - bannerHeight + 48);
+
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText(`🛡️ CIVICLOOP GEO-CAM VERIFIED EVIDENCE`, 20, img.height - bannerHeight + 68);
+
+        setCapturedImage(canvas.toDataURL('image/jpeg', 0.9));
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSelectEmergency = () => {
     const photoData = {
-      imageUri: capturedImage || 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop&q=80',
+      imageUri: capturedImage || 'https://images.unsplash.com/photo-1587740896339-96a76170508d?w=800&auto=format&fit=crop&q=80',
       ...location
     };
     closeGeoCam();
@@ -106,116 +266,193 @@ export default function GeoCamModal() {
   if (!isGeoCamOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[3000] flex items-center justify-center p-3 sm:p-5 bg-[#0B2E59]/60 backdrop-blur-sm animate-fade-in font-sans">
+      <div className="bg-white border border-[#D9E2EC] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
         
         {/* Modal Header */}
-        <div className="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
-              <Camera className="w-5 h-5" />
+        <div className="px-5 py-3.5 bg-[#F8FAFC] border-b border-[#D9E2EC] flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="p-2 rounded-xl bg-[#0B2E59] text-white">
+              <Camera className="w-5 h-5 text-cyan-400" />
             </div>
             <div>
-              <h2 className="font-extrabold text-slate-100 text-base">
-                {language === 'ta' ? 'ஜியோ-கேம் நேரடி படம் பிடிப்பு' : 'Geo-Cam Incident Capture'}
-              </h2>
-              <p className="text-xs text-slate-400 font-mono">
-                {language === 'ta' ? 'ஜி.பி.எஸ் மெட்டாடேட்டா தானாக சேர்க்கப்படும்' : 'GPS metadata & timestamp automatically embedded'}
+              <div className="flex items-center space-x-2">
+                <h3 className="font-extrabold text-[#14213D] text-base">
+                  Geo-Cam Incident Capture
+                </h3>
+                <span className="px-2 py-0.5 rounded-full bg-[#EAF7EE] text-[#16803C] border border-[#16803C]/30 text-[10px] font-mono font-bold">
+                  GPS LOCK ACTIVE
+                </span>
+              </div>
+              <p className="text-[11px] text-[#52616B] font-mono">
+                Live Latitude & Longitude automatically burned into photo evidence
               </p>
             </div>
           </div>
 
           <button
             onClick={closeGeoCam}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+            className="p-2 rounded-xl bg-[#F1F5F9] hover:bg-[#EAF1F8] text-[#52616B] hover:text-[#14213D] font-bold"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Viewport / Live Stream / Captured Preview */}
-        <div className="relative bg-slate-950 flex-1 min-h-[280px] flex items-center justify-center overflow-hidden">
+        {/* Live GPS Coordinates Status Strip */}
+        <div className="px-5 py-2.5 bg-[#0B2E59] text-white flex items-center justify-between text-xs font-mono">
+          <div className="flex items-center space-x-2">
+            <Crosshair className={`w-4 h-4 text-cyan-400 ${isLocating ? 'animate-spin' : ''}`} />
+            <div>
+              <span className="text-cyan-300 font-bold">
+                LAT: {location.lat.toFixed(6)}° N  |  LONG: {location.long.toFixed(6)}° E
+              </span>
+              <span className="text-slate-300 ml-2 text-[11px]">(Accuracy: ±{location.accuracy}m)</span>
+            </div>
+          </div>
+
+          <button
+            onClick={fetchGPSLocation}
+            className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] flex items-center space-x-1"
+            title="Refresh GPS Satellite Fix"
+          >
+            <RefreshCw className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh GPS</span>
+          </button>
+        </div>
+
+        {/* Viewfinder / Captured Photo Area */}
+        <div className="relative bg-[#0d1e33] flex-1 min-h-[300px] sm:min-h-[360px] flex items-center justify-center overflow-hidden">
           
           {capturedImage ? (
-            <div className="relative w-full h-full">
+            /* Captured photo with baked-in GPS watermark */
+            <div className="relative w-full h-full flex flex-col items-center justify-center">
               <img
                 src={capturedImage}
-                alt="Captured Geo-Cam photo"
-                className="w-full h-64 sm:h-80 object-cover"
+                alt="Captured Geo-Cam evidence with GPS stamp"
+                className="w-full max-h-[360px] object-contain"
               />
               <button
                 onClick={() => setCapturedImage(null)}
-                className="absolute top-4 right-4 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-white font-semibold text-xs border border-slate-700 flex items-center space-x-1.5"
+                className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-black/70 hover:bg-black/90 text-white font-bold text-xs flex items-center space-x-1.5 backdrop-blur-sm"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Retake Photo</span>
               </button>
             </div>
           ) : stream ? (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-64 sm:h-80 object-cover"
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3 animate-pulse">
-                <Camera className="w-8 h-8" />
+            /* Live camera video stream */
+            <div className="relative w-full h-full">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+
+              {/* Viewfinder crosshairs overlay */}
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="w-48 h-48 border border-white/30 rounded-2xl relative">
+                  <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400"></div>
+                  <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400"></div>
+                  <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400"></div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-400/80"></div>
+                </div>
               </div>
-              <p className="text-sm font-semibold text-slate-300 mb-1">Live Camera Stream Active</p>
-              <p className="text-xs text-slate-400 mb-4 max-w-sm">
-                Click below to snap a photo or use the sample geotagged photo preview.
-              </p>
+
+              {/* Camera switch button */}
               <button
-                onClick={snapPhoto}
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center space-x-2"
+                onClick={toggleFacingMode}
+                className="absolute top-3 right-3 p-2 rounded-xl bg-black/60 hover:bg-black/80 text-white"
+                title="Switch Camera (Front/Back)"
               >
-                <Camera className="w-4 h-4" />
-                <span>SNAP GEOTAGGED PHOTO</span>
+                <SwitchCamera className="w-5 h-5" />
               </button>
+            </div>
+          ) : (
+            /* Fallback when browser camera permission is waiting or unavailable */
+            <div className="flex flex-col items-center justify-center p-6 text-center text-white space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-cyan-400">
+                <Camera className="w-7 h-7" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm">Geo-Cam Ready</h4>
+                <p className="text-xs text-slate-400 max-w-sm mt-1">
+                  {cameraError || 'Click Snap Photo to take a geotagged verification snapshot with embedded Latitude & Longitude.'}
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-3 pt-2">
+                <button
+                  onClick={() => startCamera(facingMode)}
+                  className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold"
+                >
+                  Retry Camera Access
+                </button>
+                <button
+                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-cyan-300 text-xs font-semibold flex items-center space-x-1"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Image</span>
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Embedded Real-time GPS Watermark Overlay */}
-          <div className="absolute bottom-3 left-3 right-3 bg-slate-950/85 backdrop-blur-md p-3 rounded-2xl border border-slate-800 flex items-center justify-between text-xs">
-            <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
-              <div>
-                <p className="font-mono text-cyan-300 font-bold text-[11px]">
-                  LAT: {location.lat.toFixed(5)} | LONG: {location.long.toFixed(5)} (±{location.accuracy}m)
-                </p>
-                <p className="text-[10px] text-slate-400 line-clamp-1">{location.address}</p>
-              </div>
-            </div>
-            <button
-              onClick={fetchGPSLocation}
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
-              title="Refresh GPS Lock"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin text-cyan-400' : ''}`} />
-            </button>
-          </div>
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
         </div>
 
-        {/* Dual Primary Actions Footer: [EMERGENCY] vs [COMPLAINT] */}
-        <div className="p-6 bg-slate-900 border-t border-slate-800 flex flex-col sm:flex-row gap-4">
+        {/* Capture Shutter Button (When not yet captured) */}
+        {!capturedImage && (
+          <div className="p-3 bg-[#F8FAFC] border-t border-[#D9E2EC] flex items-center justify-between">
+            <button
+              onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#EAF1F8] border border-[#D9E2EC] text-[#52616B] text-xs font-semibold flex items-center space-x-1.5"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Browse Image</span>
+            </button>
+
+            <button
+              onClick={snapPhotoWithGPSWatermark}
+              className="px-6 py-2.5 rounded-2xl bg-[#0B2E59] hover:bg-[#14213D] text-white font-extrabold text-xs shadow-md flex items-center space-x-2 transition-transform active:scale-95"
+            >
+              <Camera className="w-4 h-4 text-cyan-400" />
+              <span>SNAP GEOTAGGED PHOTO</span>
+            </button>
+
+            <span className="text-[11px] font-mono text-[#52616B] hidden sm:inline">
+              Embeds Lat {location.lat.toFixed(3)}°, Long {location.long.toFixed(3)}°
+            </span>
+          </div>
+        )}
+
+        {/* Dual Primary Action Selector: [EMERGENCY MODE] vs [COMPLAINT MODE] */}
+        <div className="p-4 sm:p-5 bg-white border-t border-[#D9E2EC] flex flex-col sm:flex-row gap-3">
           
           {/* Action 1: EMERGENCY MODE */}
           <button
             onClick={handleSelectEmergency}
-            className="flex-1 bg-gradient-to-r from-red-600 via-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white p-4 rounded-2xl shadow-xl shadow-red-600/30 border border-red-400/40 flex items-center space-x-3 transition-transform active:scale-95 group"
+            className="flex-1 bg-[#FFF0F0] hover:bg-[#C62828] text-[#C62828] hover:text-white p-3.5 rounded-2xl border border-[#C62828]/40 shadow-xs flex items-center space-x-3 transition-all active:scale-95 group text-left"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-              <AlertOctagon className="w-6 h-6 text-white animate-bounce" />
+            <div className="w-10 h-10 rounded-xl bg-[#C62828]/15 group-hover:bg-white/20 flex items-center justify-center shrink-0">
+              <AlertOctagon className="w-6 h-6 text-[#C62828] group-hover:text-white animate-bounce" />
             </div>
-            <div className="text-left">
-              <div className="font-extrabold text-sm tracking-wide uppercase flex items-center space-x-1.5">
-                <span>[EMERGENCY MODE]</span>
+            <div>
+              <div className="font-extrabold text-xs tracking-wider uppercase">
+                [EMERGENCY MODE]
               </div>
-              <p className="text-xs text-red-100 font-medium">
-                {language === 'ta' ? 'அவசர ஆபத்து - ஆம்புலன்ஸ் & மருத்துவமனை' : 'Life-threatening scenario: Instant Hospital & n8n Priority Trigger'}
+              <p className="text-[11px] opacity-90 leading-tight mt-0.5">
+                Life-threat: Nearest hospitals lookup & priority n8n dispatch
               </p>
             </div>
           </button>
@@ -223,22 +460,23 @@ export default function GeoCamModal() {
           {/* Action 2: COMPLAINT MODE */}
           <button
             onClick={handleSelectComplaint}
-            className="flex-1 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white p-4 rounded-2xl shadow-xl shadow-indigo-600/30 border border-indigo-400/40 flex items-center space-x-3 transition-transform active:scale-95 group"
+            className="flex-1 bg-[#EAF1F8] hover:bg-[#1769E0] text-[#0B2E59] hover:text-white p-3.5 rounded-2xl border border-[#1769E0]/40 shadow-xs flex items-center space-x-3 transition-all active:scale-95 group text-left"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-              <FileText className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-[#1769E0]/15 group-hover:bg-white/20 flex items-center justify-center shrink-0">
+              <FileText className="w-6 h-6 text-[#1769E0] group-hover:text-white" />
             </div>
-            <div className="text-left">
-              <div className="font-extrabold text-sm tracking-wide uppercase flex items-center space-x-1.5">
-                <span>[COMPLAINT MODE]</span>
+            <div>
+              <div className="font-extrabold text-xs tracking-wider uppercase">
+                [COMPLAINT MODE]
               </div>
-              <p className="text-xs text-blue-100 font-medium">
-                {language === 'ta' ? 'நகராட்சி குறை - தானியங்கி மேலாண்மை' : 'Civic Complaint: Auto-fills standard templates & tracks streaks'}
+              <p className="text-[11px] opacity-90 leading-tight mt-0.5">
+                Civic Hazard: Auto-fill complaint templates & Tamil memos
               </p>
             </div>
           </button>
 
         </div>
+
       </div>
     </div>
   );

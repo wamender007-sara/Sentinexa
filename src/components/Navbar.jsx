@@ -10,13 +10,15 @@ import {
   Settings, 
   Ticket, 
   Cpu, 
-  Activity
+  Activity,
+  Camera
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   const { 
     language, 
     setLanguage, 
+    openGeoCam,
     openCitizenSignalModal,
     triggerEmergencyModal,
     simulateHeavyRain,
@@ -128,7 +130,17 @@ export default function Navbar({ activeTab, setActiveTab }) {
             <span className="hidden lg:inline text-[11px]">Simulate Rain</span>
           </button>
 
-          {/* Action 2: Submit Citizen Signal */}
+          {/* Action 2: GEO-CAM Button */}
+          <button
+            onClick={openGeoCam}
+            title="Open Geo-Cam with live GPS Lat/Long watermark"
+            className="px-3 py-1.5 rounded-xl bg-[#0B2E59] hover:bg-[#14213D] text-white font-extrabold text-xs shadow-xs flex items-center space-x-1.5 transition-all active:scale-95 shrink-0"
+          >
+            <Camera className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            <span className="whitespace-nowrap">GEO-CAM</span>
+          </button>
+
+          {/* Action 3: Submit Citizen Signal */}
           <button
             onClick={openCitizenSignalModal}
             className="px-3 py-1.5 rounded-xl bg-[#1769E0] hover:bg-[#1253B3] text-white font-bold text-xs shadow-xs flex items-center space-x-1.5 transition-all active:scale-95 shrink-0"

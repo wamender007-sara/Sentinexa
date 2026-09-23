@@ -3,7 +3,7 @@ import { useCivicStore } from '../store/useCivicStore';
 import { X, Send, MapPin, Camera, CheckCircle2, ShieldCheck, Upload, AlertTriangle, EyeOff } from 'lucide-react';
 
 export default function CitizenReportModal() {
-  const { isCitizenSignalOpen, closeCitizenSignalModal, addIncident, language } = useCivicStore();
+  const { isCitizenSignalOpen, closeCitizenSignalModal, openGeoCam, addIncident, language } = useCivicStore();
   
   const [category, setCategory] = useState('drainage');
   const [title, setTitle] = useState('');
@@ -173,14 +173,26 @@ export default function CitizenReportModal() {
               </div>
 
               {/* Location Tag */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#52616B] mb-1">
-                  GPS Location
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#52616B]">
+                  GPS Location & Geo-Cam Capture
                 </label>
                 <div className="flex items-center space-x-2 bg-[#F8FAFC] p-2.5 rounded-xl border border-[#D9E2EC] text-xs font-mono text-[#0B2E59]">
                   <MapPin className="w-4 h-4 text-[#1769E0] shrink-0" />
                   <span className="truncate">{location.address} (Lat: {location.lat}, Long: {location.long})</span>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeCitizenSignalModal();
+                    openGeoCam();
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-[#0B2E59] hover:bg-[#14213D] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all active:scale-95 shadow-xs"
+                >
+                  <Camera className="w-4 h-4 text-cyan-400" />
+                  <span>Launch Geo-Cam with Live GPS Watermark</span>
+                </button>
               </div>
 
               {/* Urgency Slider */}
