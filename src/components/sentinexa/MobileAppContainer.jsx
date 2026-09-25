@@ -117,9 +117,9 @@ export default function MobileAppContainer({ isStandAlone = false }) {
   const hideBottomNav = activeScreen === 'geocam' || activeScreen === 'emergency';
 
   return (
-    <div className="w-full flex justify-center items-center">
-      {/* Mobile Phone Mockup Frame - Light Platinum Aesthetic */}
-      <div className={`relative w-[375px] h-[812px] max-h-[85vh] bg-[#F8FAFC] rounded-[44px] border-[8px] border-slate-300 shadow-[0_20px_60px_rgba(15,23,42,0.18)] overflow-hidden flex flex-col font-sans select-none ring-1 ring-slate-200 ${
+    <div className="w-full h-full flex justify-center items-center">
+      {/* Mobile Phone Mockup Frame - Light Platinum Aesthetic on desktop, clean full-screen on mobile */}
+      <div className={`relative w-full h-[100dvh] sm:w-[390px] sm:h-[844px] sm:max-h-[88vh] bg-[#F8FAFC] sm:rounded-[44px] sm:border-[8px] sm:border-slate-300 sm:shadow-[0_20px_60px_rgba(15,23,42,0.18)] overflow-hidden flex flex-col font-sans select-none sm:ring-1 sm:ring-slate-200 ${
         isStandAlone ? 'max-h-screen' : ''
       }`}>
         

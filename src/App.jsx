@@ -35,11 +35,11 @@ export default function App() {
       {/* Main View Area */}
       <main className="flex-1 w-full flex flex-col">
         {viewMode === 'mobile' && (
-          <div className="flex-1 w-full flex flex-col items-center justify-center p-3 sm:p-6 bg-[#F1F5F9]">
-            {/* Quick Context helper banner */}
-            <div className="mb-4 text-center max-w-md">
+          <div className="flex-1 w-full flex flex-col items-center justify-center p-0 sm:p-6 bg-[#F1F5F9]">
+            {/* Quick Context helper banner (desktop only) */}
+            <div className="hidden sm:block mb-4 text-center max-w-md">
               <span className="text-[11px] font-mono bg-white text-blue-700 border border-slate-200 px-3 py-1 rounded-full shadow-xs font-bold">
-                📱 Interactive 375×812 Mobile Viewport
+                📱 Interactive Mobile Viewport (390×844)
               </span>
               <p className="text-xs text-slate-500 mt-1">
                 Tap bottom tabs (Home, GIS Map, Geo-Cam, Tickets, Agents, Config) or launch Emergency / Complaint flows.

@@ -1,8 +1,12 @@
 import React from 'react';
 import { Smartphone, Monitor, Award, Shield } from 'lucide-react';
 import SentinexaLogo from './SentinexaLogo';
+import { useCivicStore } from '../../store/useCivicStore';
 
 export default function SentinexaViewportBar({ activeMode, onSelectMode }) {
+  const { userLocation } = useCivicStore();
+  const districtName = userLocation?.city || 'Kinathukadavu / Coimbatore';
+
   return (
     <header className="bg-white border-b border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0 z-[3000] sticky top-0 shadow-xs">
       {/* Brand Identity with Modern Logo */}
@@ -53,8 +57,8 @@ export default function SentinexaViewportBar({ activeMode, onSelectMode }) {
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-emerald-700 font-semibold text-[11px]">GIS LIVE MESH</span>
         </div>
-        <div className="text-[11px] bg-slate-100 border border-slate-200 text-slate-700 px-2.5 py-1 rounded">
-          Tamil Nadu / Chennai
+        <div className="text-[11px] bg-slate-100 border border-slate-200 text-slate-700 px-2.5 py-1 rounded font-semibold">
+          Tamil Nadu / {districtName}
         </div>
       </div>
     </header>
