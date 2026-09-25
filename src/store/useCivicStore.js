@@ -99,7 +99,7 @@ export const useCivicStore = create((set, get) => ({
 
   // Prototype Notification Recipient (Secondary Email & Phone)
   prototypeSettings: {
-    secondaryEmail: typeof window !== 'undefined' ? localStorage.getItem('sentinexa_secondary_email') || '' : '',
+    secondaryEmail: typeof window !== 'undefined' ? localStorage.getItem('sentinexa_secondary_email') || 'saravanprasanna007@gmail.com' : 'saravanprasanna007@gmail.com',
     secondaryPhone: typeof window !== 'undefined' ? localStorage.getItem('sentinexa_secondary_phone') || '' : '',
     sendEmailAlerts: true,
     sendMessageAlerts: true,
@@ -220,7 +220,7 @@ export const useCivicStore = create((set, get) => ({
     addAgentLog('EmergencyDispatchAgent', `Prepared official memorandum (EN & TA) for ${incident.department}. Portal: ${incident.routingPortal}`, 'info', incident.id);
 
     const protoSettings = get().prototypeSettings;
-    const targetEmail = protoSettings?.secondaryEmail || 'saravanaprasanna7@gmail.com';
+    const targetEmail = protoSettings?.secondaryEmail || 'saravanprasanna007@gmail.com';
 
     const payload = {
       ticketId: incident.id,

@@ -51,7 +51,7 @@ const N8N_WORKFLOW_TEMPLATE = {
     },
     {
       "parameters": {
-        "toEmail": "={{ $json.body?.recipientEmail || $json.body?.secondaryEmail || 'saravanaprasanna7@gmail.com' }}",
+        "toEmail": "={{ $json.body?.recipientEmail || $json.body?.secondaryEmail || 'saravanprasanna007@gmail.com' }}",
         "subject": "={{ $json.body?.emailSubject || '[SENTINEXA ALERT] Problem Reported' }}",
         "text": "={{ $json.body?.emailMessage || 'Incident report dispatched' }}",
         "html": "={{ $json.body?.emailHtml || '<p>Problem reported via Sentinexa</p>' }}",
@@ -170,8 +170,8 @@ export default function Screen7ProfileSettings({ onBack }) {
       ticketId: 'TEST-' + Math.floor(1000 + Math.random() * 9000),
       title: 'Road Damage & Pothole Alert (Prototype Test)',
       description: 'Prototype test incident: Pothole detected in Coimbatore. Forwarded to secondary mail.',
-      recipientEmail: secondaryEmail || 'saravanaprasanna7@gmail.com',
-      secondaryEmail: secondaryEmail || 'saravanaprasanna7@gmail.com',
+      recipientEmail: secondaryEmail || 'saravanprasanna007@gmail.com',
+      secondaryEmail: secondaryEmail || 'saravanprasanna007@gmail.com',
       secondaryPhone: secondaryPhone || '',
       emailSubject: '[SENTINEXA PROTOTYPE TEST] Problem Dispatched to Secondary Mail',
       emailMessage: `Test incident report successfully generated and sent to: ${secondaryEmail || 'your secondary mail'}`,
@@ -205,8 +205,8 @@ export default function Screen7ProfileSettings({ onBack }) {
       type: 'CIVIC',
       ticketId: 'TEST-' + Math.floor(1000 + Math.random() * 9000),
       title: 'Connectivity Ping from Sentinexa',
-      recipientEmail: secondaryEmail || 'saravanaprasanna7@gmail.com',
-      secondaryEmail: secondaryEmail || 'saravanaprasanna7@gmail.com',
+      recipientEmail: secondaryEmail || 'saravanprasanna007@gmail.com',
+      secondaryEmail: secondaryEmail || 'saravanprasanna007@gmail.com',
       emailSubject: '[SENTINEXA ALERT] Connectivity Test Ping',
       timestamp: new Date().toISOString()
     };
