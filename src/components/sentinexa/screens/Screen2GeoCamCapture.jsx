@@ -6,23 +6,23 @@ import {
   getTamilNaduCityHint 
 } from '../../../services/geoService';
 import { 
-  Camera, MapPin, AlertOctagon, FileText, RefreshCw, 
+  Camera, MapPin, AlertOctagon, FileText, 
   ArrowRight, CheckCircle2, Crosshair, Image as ImageIcon, 
-  Smartphone, X, SwitchCamera, AlertTriangle, Sparkles, Upload
+  Smartphone, X, SwitchCamera, Sparkles
 } from 'lucide-react';
 
 export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProceedToFlow, onCapture, onClose }) {
   const videoRef = useRef(null);
+  const streamRef = useRef(null);
   const fileInputRef = useRef(null);
   const galleryInputRef = useRef(null);
 
-  const [stream, setStream] = useState(null);
   const [facingMode, setFacingMode] = useState('environment'); // 'environment' | 'user'
   const [captureMode, setCaptureMode] = useState(initialMode);
   const [capturedImage, setCapturedImage] = useState(null);
   const [isLocating, setIsLocating] = useState(true);
   const [cameraActive, setCameraActive] = useState(false);
-  const [cameraError, setCameraError] = useState(null);
+  const [cameraNotice, setCameraNotice] = useState(null);
 
   const storeUserLocation = useCivicStore(state => state.userLocation);
   const setUserLocation = useCivicStore(state => state.setUserLocation);
@@ -49,7 +49,7 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
     };
   });
 
-  // Live GPS tracking
+  // Passive Live GPS tracking
   useEffect(() => {
     setIsLocating(true);
     const unwatch = startLiveLocationTracking(
@@ -65,84 +65,85 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
     return () => unwatch();
   }, [setUserLocation]);
 
-  // Robust Camera Stream Acquisition
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(t => t.stop());
-      setStream(null);
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setCameraActive(false);
-  }, [stream]);
+  // Direct, Immediate Camera Startup without any intermediary "Allow" screen
+  useEffect(() => {
+    let active = true;
 
-  const startCamera = useCallback(async (facing = facingMode) => {
-    stopCamera();
-    setCameraError(null);
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setCameraError('Camera API is not supported on this browser. You can upload a photo or choose a sample incident.');
-      return;
-    }
-
-    const constraintConfigs = [
-      // 1. Preferred rear camera with high-def video
-      { video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-      // 2. Ideal facing mode standard
-      { video: { facingMode: { ideal: facing } }, audio: false },
-      // 3. Exact user front camera (fallback for laptops/desktops without rear cam)
-      { video: { facingMode: 'user' }, audio: false },
-      // 4. Any available webcam/video source
-      { video: true, audio: false }
-    ];
-
-    let mediaStream = null;
-    let lastErr = null;
-
-    for (const constraints of constraintConfigs) {
-      try {
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (mediaStream) break;
-      } catch (err) {
-        lastErr = err;
+    async function initCamera() {
+      // Stop any prior tracks
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
       }
-    }
 
-    if (mediaStream) {
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        if (active) {
+          setCameraActive(false);
+          setCameraNotice(isTamil ? 'கேமரா கிடைக்கவில்லை' : 'Camera hardware not detected');
+        }
+        return;
+      }
+
+      const constraintOptions = [
+        { video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false },
+        { video: { facingMode: facingMode }, audio: false },
+        { video: { facingMode: 'user' }, audio: false },
+        { video: true, audio: false }
+      ];
+
+      for (const constraints of constraintOptions) {
+        if (!active) return;
         try {
-          await videoRef.current.play();
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (!active) {
+            stream.getTracks().forEach(t => t.stop());
+            return;
+          }
+
+          streamRef.current = stream;
+
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.setAttribute('playsinline', 'true');
+            videoRef.current.setAttribute('webkit-playsinline', 'true');
+            videoRef.current.muted = true;
+            try {
+              await videoRef.current.play();
+            } catch (playErr) {
+              console.warn('Autoplay handled:', playErr);
+            }
+          }
+
           setCameraActive(true);
-        } catch {
-          setCameraActive(true);
+          setCameraNotice(null);
+          return;
+        } catch (err) {
+          console.warn('Camera option attempt failed:', err);
         }
       }
-    } else {
-      console.warn('Camera initialization failed with fallback attempts:', lastErr);
-      if (lastErr?.name === 'NotAllowedError' || lastErr?.name === 'PermissionDeniedError') {
-        setCameraError('Camera permission was blocked. Please tap "Enable Camera" or pick an incident photo.');
-      } else if (lastErr?.name === 'NotFoundError' || lastErr?.name === 'DevicesNotFoundError') {
-        setCameraError('No physical camera detected on this device. Upload or pick a sample photo.');
-      } else {
-        setCameraError('Unable to open live camera. Tap "Enable Camera" to grant access or upload a photo.');
-      }
-      setCameraActive(false);
-    }
-  }, [facingMode, stopCamera]);
 
-  useEffect(() => {
-    startCamera(facingMode);
+      if (active) {
+        setCameraActive(false);
+        setCameraNotice(isTamil ? 'கேமரா அனுமதி தேவை' : 'Camera permission not granted');
+      }
+    }
+
+    initCamera();
+
     return () => {
-      stopCamera();
+      active = false;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
     };
-  }, [facingMode]);
+  }, [facingMode, isTamil]);
 
   const toggleFacingMode = () => {
-    const nextMode = facingMode === 'environment' ? 'user' : 'environment';
-    setFacingMode(nextMode);
+    setFacingMode(prev => (prev === 'environment' ? 'user' : 'environment'));
   };
 
   const handleRefreshGPS = () => {
@@ -187,19 +188,9 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
     if (sourceImgOrCanvas) {
       ctx.drawImage(sourceImgOrCanvas, 0, 0, 1280, 720);
     } else {
-      // High-tech synthetic incident canvas if no image provided
+      // Synthetic incident canvas if no direct image
       ctx.fillStyle = captureMode === 'emergency' ? '#1e1b4b' : '#0f172a';
       ctx.fillRect(0, 0, 1280, 720);
-
-      // Grid mesh pattern
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 1;
-      for (let x = 0; x < 1280; x += 40) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 720); ctx.stroke();
-      }
-      for (let y = 0; y < 720; y += 40) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1280, y); ctx.stroke();
-      }
 
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 36px sans-serif';
@@ -245,10 +236,10 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
 
   const handleCapture = () => {
     const video = videoRef.current;
-    if (video && cameraActive && video.videoWidth > 0 && video.readyState >= 2) {
+    if (video && cameraActive && video.videoWidth > 0) {
       watermarkAndSave(video);
     } else {
-      // If camera is not active, try triggering file picker
+      // If live camera is not available on this device, directly trigger device camera / file input
       fileInputRef.current?.click();
     }
   };
@@ -265,31 +256,19 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
     reader.readAsDataURL(file);
   };
 
-  // Quick 1-tap Sample Incidents for instant testing / desktop verification
+  // Quick 1-tap Sample Incidents for desktop testing
   const handleSelectSampleIncident = (title, emoji, bgGradient) => {
     const canvas = document.createElement('canvas');
     canvas.width = 1280;
     canvas.height = 720;
     const ctx = canvas.getContext('2d');
 
-    // Create stylish photorealistic simulation background
     const grad = ctx.createLinearGradient(0, 0, 1280, 720);
     grad.addColorStop(0, bgGradient[0]);
     grad.addColorStop(1, bgGradient[1]);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 1280, 720);
 
-    // Asphalt texture simulation
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    for (let i = 0; i < 400; i++) {
-      const rx = Math.random() * 1280;
-      const ry = Math.random() * 720;
-      const rw = Math.random() * 8 + 2;
-      const rh = Math.random() * 8 + 2;
-      ctx.fillRect(rx, ry, rw, rh);
-    }
-
-    // Incident target circle
     ctx.beginPath();
     ctx.arc(640, 320, 100, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
@@ -298,13 +277,11 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
     ctx.strokeStyle = '#FFFFFF';
     ctx.stroke();
 
-    // Emoji icon
     ctx.font = '80px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(emoji, 640, 310);
 
-    // Label
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 32px sans-serif';
     ctx.fillText(title, 640, 460);
@@ -344,12 +321,12 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
     }
   };
 
-  // ── VIEW 1: AFTER PHOTO CAPTURED (CONFIRMATION) ──
+  // ── VIEW 1: CONFIRMATION SCREEN AFTER CAPTURE ──
   if (capturedImage) {
     return (
       <div className="flex flex-col h-full bg-white overflow-y-auto font-sans select-none">
         {/* Header */}
-        <div className="px-4 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+        <div className="px-4 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <button 
               type="button"
@@ -376,7 +353,7 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {/* Photo Preview with Watermark */}
           <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-900">
-            <img src={capturedImage} alt="Captured Evidence" className="w-full object-cover max-h-56" />
+            <img src={capturedImage} alt="Captured Evidence" className="w-full object-cover max-h-60" />
           </div>
 
           {/* Geo Information Card */}
@@ -424,7 +401,7 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
         </div>
 
         {/* Bottom Actions */}
-        <div className="px-4 pb-6 pt-3 space-y-2 border-t border-slate-100 bg-white">
+        <div className="px-4 pb-6 pt-3 space-y-2 border-t border-slate-100 bg-white shrink-0">
           <button
             type="button"
             onClick={handleConfirmAndProceed}
@@ -454,10 +431,10 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
     );
   }
 
-  // ── VIEW 2: LIVE VIEWFINDER & CAPTURE ──
+  // ── VIEW 2: DIRECT LIVE CAMERA VIEWFINDER (NO "ALLOW" BLOCKING OVERLAYS) ──
   return (
-    <div className="relative w-full h-full bg-slate-950 flex flex-col overflow-hidden font-sans select-none">
-      {/* Hidden file & gallery inputs */}
+    <div className="relative w-full h-full bg-black flex flex-col overflow-hidden font-sans select-none">
+      {/* Hidden file & gallery inputs for mobile / desktop file selection */}
       <input 
         ref={fileInputRef} 
         type="file" 
@@ -516,131 +493,71 @@ export default function Screen2GeoCamCapture({ initialMode = 'complaint', onProc
         </div>
       </div>
 
-      {/* ── VIDEO / VIEWFINDER AREA ── */}
-      <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden bg-slate-900">
-        {/* Permanent video element */}
+      {/* ── LIVE VIDEO VIEWFINDER ── */}
+      <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden bg-black">
+        {/* The video element is directly active */}
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          onLoadedMetadata={() => setCameraActive(true)}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${cameraActive ? 'opacity-100' : 'opacity-0'}`}
+          className="w-full h-full object-cover"
         />
 
-        {/* Optical Crosshair Reticle when Camera is Active */}
-        {cameraActive && (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="w-60 h-60 border border-white/30 rounded-3xl relative flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-blue-500/80 shadow-[0_0_12px_#38bdf8] animate-pulse" />
-              <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-white/80" />
-              <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-white/80" />
-              <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-white/80" />
-              <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-white/80" />
-            </div>
+        {/* Optical Crosshair Reticle */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+          <div className="w-60 h-60 border border-white/30 rounded-3xl relative flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-blue-500/80 shadow-[0_0_12px_#38bdf8] animate-pulse" />
+            <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-white/80" />
+            <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-white/80" />
+            <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-white/80" />
+            <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-white/80" />
           </div>
-        )}
+        </div>
 
-        {/* Fallback View when Camera Permission is Pending or Hardware Not Available */}
-        {!cameraActive && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white bg-slate-950/90 backdrop-blur-sm z-10 overflow-y-auto">
-            <div className="w-16 h-16 rounded-3xl bg-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center text-blue-400 mb-3 shadow-lg shadow-blue-500/20">
-              <Camera className="w-8 h-8 animate-pulse" />
-            </div>
-
-            <h3 className="font-black text-base text-white">
-              {isTamil ? 'ஜியோ கேமரா தயார்' : 'Geo-Cam Active'}
-            </h3>
-            <p className="text-xs text-slate-300 max-w-xs mt-1 leading-relaxed">
-              {cameraError || (isTamil 
-                ? 'கேமரா அனுமதி அல்லது படங்களை தேர்வு செய்யவும்.' 
-                : 'Allow camera access to take live GPS photo, or pick from gallery or sample incidents below.')}
-            </p>
-
-            {/* Direct Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-4 w-full max-w-xs">
-              <button
-                type="button"
-                onClick={() => startCamera(facingMode)}
-                className="flex-1 min-w-[130px] px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
-              >
-                <Camera className="w-4 h-4" />
-                <span>{isTamil ? 'கேமரா திறக்க' : 'Enable Camera'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex-1 min-w-[130px] px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-              >
-                <Smartphone className="w-4 h-4 text-emerald-400" />
-                <span>{isTamil ? 'போன் கேமரா' : 'Take Photo'}</span>
-              </button>
-            </div>
-
-            {/* 1-Tap Quick Sample Incident Presets */}
-            <div className="w-full max-w-xs mt-5 pt-4 border-t border-white/10 text-left">
-              <div className="flex items-center gap-1 text-[11px] font-bold text-slate-300 mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>{isTamil ? 'மாதிரி சம்பவங்கள் (உடனடி சோதனை):' : 'Or test with a sample incident:'}</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleSelectSampleIncident('Pothole & Road Crater', '🕳️', ['#1e293b', '#0f172a'])}
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-left transition-colors flex items-center gap-2 text-xs text-white"
-                >
-                  <span className="text-xl">🕳️</span>
-                  <div className="min-w-0">
-                    <p className="font-bold truncate text-[11px]">Pothole</p>
-                    <p className="text-[9px] text-slate-400">Road damage</p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectSampleIncident('Water Pipeline Burst', '💧', ['#0369a1', '#0f172a'])}
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-left transition-colors flex items-center gap-2 text-xs text-white"
-                >
-                  <span className="text-xl">💧</span>
-                  <div className="min-w-0">
-                    <p className="font-bold truncate text-[11px]">Water Leak</p>
-                    <p className="text-[9px] text-slate-400">Pipeline issue</p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectSampleIncident('Garbage Overflow', '🗑️', ['#3f3f46', '#18181b'])}
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-left transition-colors flex items-center gap-2 text-xs text-white"
-                >
-                  <span className="text-xl">🗑️</span>
-                  <div className="min-w-0">
-                    <p className="font-bold truncate text-[11px]">Garbage</p>
-                    <p className="text-[9px] text-slate-400">Sanitation</p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectSampleIncident('Faulty Streetlight', '💡', ['#78350f', '#0f172a'])}
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-left transition-colors flex items-center gap-2 text-xs text-white"
-                >
-                  <span className="text-xl">💡</span>
-                  <div className="min-w-0">
-                    <p className="font-bold truncate text-[11px]">Streetlight</p>
-                    <p className="text-[9px] text-slate-400">EB issue</p>
-                  </div>
-                </button>
-              </div>
-            </div>
+        {/* Subtle non-blocking chip if camera is still acquiring or denied */}
+        {cameraNotice && (
+          <div className="absolute top-14 left-1/2 -translate-x-1/2 bg-black/75 backdrop-blur px-3 py-1 rounded-full border border-white/20 text-white text-[10px] font-mono pointer-events-none z-20">
+            {cameraNotice}
           </div>
         )}
       </div>
 
+      {/* ── QUICK INCIDENT CHIPS (Optional 1-Tap) ── */}
+      <div className="px-3 py-1 bg-black/80 z-20 flex items-center justify-center gap-1.5 overflow-x-auto text-[10px]">
+        <span className="text-slate-400 font-mono text-[9px] shrink-0">Preset:</span>
+        <button
+          type="button"
+          onClick={() => handleSelectSampleIncident('Pothole & Road Damage', '🕳️', ['#1e293b', '#0f172a'])}
+          className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium shrink-0"
+        >
+          🕳️ Pothole
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSelectSampleIncident('Water Pipeline Burst', '💧', ['#0369a1', '#0f172a'])}
+          className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium shrink-0"
+        >
+          💧 Pipeline
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSelectSampleIncident('Garbage Overflow', '🗑️', ['#3f3f46', '#18181b'])}
+          className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium shrink-0"
+        >
+          🗑️ Garbage
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSelectSampleIncident('Faulty Streetlight', '💡', ['#78350f', '#0f172a'])}
+          className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium shrink-0"
+        >
+          💡 Light
+        </button>
+      </div>
+
       {/* ── BOTTOM HUD & SHUTTER CONTROLS ── */}
-      <div className="px-4 pb-6 pt-3 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col items-center gap-3.5 z-20">
+      <div className="px-4 pb-6 pt-2 bg-black flex flex-col items-center gap-3 z-20">
         {/* Mode Selector Pill */}
         <div className="flex p-1 rounded-full bg-white/10 backdrop-blur border border-white/20 gap-1">
           <button
