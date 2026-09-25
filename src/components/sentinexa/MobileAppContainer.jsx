@@ -18,6 +18,7 @@ import { startLiveLocationTracking } from '../../services/geoService';
 export default function MobileAppContainer({ isStandAlone = false }) {
   const [activeScreen, setActiveScreen] = useState('home');
   const [capturedData, setCapturedData] = useState(null);
+  const [geoCamMode, setGeoCamMode] = useState('complaint');
   const [currentTime, setCurrentTime] = useState('09:41');
 
   useEffect(() => {
@@ -68,6 +69,7 @@ export default function MobileAppContainer({ isStandAlone = false }) {
           <Screen1HomeDashboard 
             onNavigate={(screen) => setActiveScreen(screen)}
             onOpenGeoCam={(mode) => {
+              setGeoCamMode(mode || 'complaint');
               setActiveScreen('geocam');
             }}
           />
@@ -75,6 +77,7 @@ export default function MobileAppContainer({ isStandAlone = false }) {
       case 'geocam':
         return (
           <Screen2GeoCamCapture 
+            initialMode={geoCamMode}
             onClose={() => setActiveScreen('home')}
             onCapture={handleCaptureComplete}
             onProceedToFlow={handleCaptureComplete}

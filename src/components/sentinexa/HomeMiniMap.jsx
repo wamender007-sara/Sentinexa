@@ -59,7 +59,7 @@ export default function HomeMiniMap({ onExpand }) {
       >
         <MapFit center={center} />
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
         />
         {userLocation?.lat && (
