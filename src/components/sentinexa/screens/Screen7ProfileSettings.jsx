@@ -131,8 +131,12 @@ export default function Screen7ProfileSettings({ onBack }) {
   const [protoTestSent, setProtoTestSent] = useState(false);
 
   // n8n states
-  const [webhookUrl, setWebhookUrl] = useState(n8nConfig?.complaintWebhookUrl || 'https://n8n.example.com/webhook/civic-complaint-dispatch');
-  const [simulationMode, setSimulationMode] = useState(n8nConfig?.simulationMode ?? true);
+  const [webhookUrl, setWebhookUrl] = useState(
+    n8nConfig?.complaintWebhookUrl && !n8nConfig.complaintWebhookUrl.includes('example.com')
+      ? n8nConfig.complaintWebhookUrl
+      : 'https://wamender.app.n8n.cloud/webhook/sentinexa-dispatch'
+  );
+  const [simulationMode, setSimulationMode] = useState(n8nConfig?.simulationMode ?? false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [copiedWorkflow, setCopiedWorkflow] = useState(false);

@@ -83,15 +83,21 @@ export const useCivicStore = create((set, get) => ({
 
   // n8n Webhook Config
   n8nConfig: {
-    emergencyWebhookUrl: 'https://n8n.example.com/webhook/civic-emergency-priority',
-    complaintWebhookUrl: 'https://n8n.example.com/webhook/civic-complaint-dispatch',
-    retryEscalationWebhookUrl: 'https://n8n.example.com/webhook/civic-2day-escalation',
+    emergencyWebhookUrl: typeof window !== 'undefined' ? localStorage.getItem('sentinexa_n8n_webhook') || 'https://wamender.app.n8n.cloud/webhook/sentinexa-dispatch' : 'https://wamender.app.n8n.cloud/webhook/sentinexa-dispatch',
+    complaintWebhookUrl: typeof window !== 'undefined' ? localStorage.getItem('sentinexa_n8n_webhook') || 'https://wamender.app.n8n.cloud/webhook/sentinexa-dispatch' : 'https://wamender.app.n8n.cloud/webhook/sentinexa-dispatch',
+    retryEscalationWebhookUrl: typeof window !== 'undefined' ? localStorage.getItem('sentinexa_n8n_webhook') || 'https://wamender.app.n8n.cloud/webhook/sentinexa-dispatch' : 'https://wamender.app.n8n.cloud/webhook/sentinexa-dispatch',
     apiKey: '',
-    simulationMode: true,
+    simulationMode: false,
   },
-  updateN8nConfig: (newConfig) => set(state => ({
-    n8nConfig: { ...state.n8nConfig, ...newConfig }
-  })),
+  updateN8nConfig: (newConfig) => set(state => {
+    const updated = { ...state.n8nConfig, ...newConfig };
+    if (typeof window !== 'undefined') {
+      if (newConfig.complaintWebhookUrl) {
+        localStorage.setItem('sentinexa_n8n_webhook', newConfig.complaintWebhookUrl);
+      }
+    }
+    return { n8nConfig: updated };
+  }),
   n8nLogs: [],
   addN8nLog: (log) => set(state => ({
     n8nLogs: [ { id: Date.now(), timestamp: new Date().toISOString(), ...log }, ...state.n8nLogs ].slice(0, 50)
