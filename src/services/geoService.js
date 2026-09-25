@@ -4,10 +4,34 @@
  * Heuristic lookup for Tamil Nadu major hubs if network/reverse geocoding is slow or offline
  */
 export function getTamilNaduCityHint(lat, lon) {
-  // Coimbatore bounds roughly: 10.8 to 11.3 N, 76.7 to 77.2 E
-  if (lat >= 10.75 && lat <= 11.35 && lon >= 76.75 && lon <= 77.25) {
-    let area = 'Gandhipuram / Central Zone';
-    if (lat >= 11.010 && lat <= 11.035 && lon >= 76.950 && lon <= 76.980) {
+  // Coimbatore bounds roughly: 10.5 to 11.35 N, 76.7 to 77.25 E
+  if (lat >= 10.50 && lat <= 11.35 && lon >= 76.75 && lon <= 77.25) {
+    let area = 'Coimbatore District';
+    let city = 'Coimbatore';
+    let district = 'Coimbatore';
+    let pincode = '641012';
+
+    // Kinathukadavu bounds: lat ~10.75 - 10.88, lon ~76.95 - 77.08
+    if (lat >= 10.74 && lat <= 10.89 && lon >= 76.94 && lon <= 77.09) {
+      area = 'Kinathukadavu';
+      city = 'Kinathukadavu, Coimbatore';
+      pincode = '642109';
+    } else if (lat >= 10.58 && lat <= 10.74 && lon >= 76.92 && lon <= 77.08) {
+      // Pollachi bounds
+      area = 'Pollachi';
+      city = 'Pollachi, Coimbatore';
+      pincode = '642001';
+    } else if (lat >= 10.89 && lat <= 10.95 && lon >= 76.94 && lon <= 77.05) {
+      // Malumichampatti / Othakkalmandapam / Eachanari
+      area = 'Eachanari / Malumichampatti';
+      city = 'Coimbatore';
+      pincode = '641021';
+    } else if (lat >= 10.88 && lat <= 10.94 && lon >= 76.88 && lon <= 76.95) {
+      // Madukkarai
+      area = 'Madukkarai';
+      city = 'Coimbatore';
+      pincode = '641105';
+    } else if (lat >= 11.010 && lat <= 11.035 && lon >= 76.950 && lon <= 76.980) {
       area = 'Cross Cut Road, Gandhipuram';
     } else if (lat >= 10.995 && lat <= 11.020 && lon >= 76.930 && lon <= 76.955) {
       area = 'R.S. Puram';
@@ -18,9 +42,9 @@ export function getTamilNaduCityHint(lat, lon) {
     }
     return { 
       area, 
-      city: 'Coimbatore', 
-      district: 'Coimbatore',
-      pincode: '641012'
+      city, 
+      district,
+      pincode
     };
   }
 

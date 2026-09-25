@@ -32,11 +32,11 @@ export default function GeoCamModal() {
   const [location, setLocation] = useState(() => {
     if (userLocation?.lat) return userLocation;
     return {
-      lat: 11.0168,
-      long: 76.9558,
+      lat: 10.8242,
+      long: 77.0185,
       accuracy: 4,
       altitude: 12,
-      address: 'Gandhipuram, Coimbatore, Tamil Nadu - 641012',
+      address: 'Kinathukadavu, Coimbatore, Tamil Nadu - 642109',
       timestamp: new Date().toISOString()
     };
   });

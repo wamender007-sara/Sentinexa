@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useCivicStore } from '../../../store/useCivicStore';
 import { 
   FileText, Send, ArrowLeft, Building2, CheckCircle2, Clock, 
-  MapPin, Sparkles, Languages, Cpu, Mail
+  MapPin, Sparkles, Languages, Cpu, Mail, Edit3, RefreshCw
 } from 'lucide-react';
+import { getTamilNaduCityHint, reverseGeocode } from '../../../services/geoService';
 
 // ── AI Vision Analysis — multi-region center-vs-edge brightness ───────────────
 // KEY INSIGHT: A pothole / road cave-in always has a DARK PIT at the center
@@ -168,12 +169,39 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
 
   const storeUserLocation = useCivicStore(state => state.userLocation);
   const effectiveLocation = effectiveData?.location || storeUserLocation;
-  const lat = effectiveLocation?.lat || 11.0168;
-  const long = effectiveLocation?.long || 76.9558;
-  const address = effectiveLocation?.address || 'Gandhipuram, Coimbatore - 641012';
-  const district = effectiveLocation?.district || 'Coimbatore';
+  
+  // Resolve initial coordinates & address cleanly
+  const initialLat = effectiveLocation?.lat || null;
+  const initialLong = effectiveLocation?.long || null;
+  const initialHint = initialLat && initialLong ? getTamilNaduCityHint(initialLat, initialLong) : null;
+  
+  const [currentLat, setCurrentLat] = useState(initialLat || 10.8242);
+  const [currentLong, setCurrentLong] = useState(initialLong || 77.0185);
+  const [address, setAddress] = useState(
+    effectiveLocation?.address && !effectiveLocation.address.includes('Gandhipuram')
+      ? effectiveLocation.address
+      : (initialHint ? `${initialHint.area}, ${initialHint.city}, Tamil Nadu` : 'Kinathukadavu, Coimbatore, Tamil Nadu')
+  );
+  const [district, setDistrict] = useState(effectiveLocation?.district || initialHint?.district || 'Coimbatore');
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const photoUrl = effectiveData?.image || null;
   const isCoimbatore = district.toLowerCase().includes('coimbatore');
+
+  // Update address if effectiveLocation updates from GPS
+  useEffect(() => {
+    if (effectiveLocation?.address && !effectiveLocation.address.includes('Sensing')) {
+      setAddress(effectiveLocation.address);
+      if (effectiveLocation.lat) setCurrentLat(effectiveLocation.lat);
+      if (effectiveLocation.long) setCurrentLong(effectiveLocation.long);
+      if (effectiveLocation.district) setDistrict(effectiveLocation.district);
+    } else if (effectiveLocation?.lat && effectiveLocation?.long) {
+      const hint = getTamilNaduCityHint(effectiveLocation.lat, effectiveLocation.long);
+      setAddress(`${hint.area}, ${hint.city}, Tamil Nadu`);
+      setCurrentLat(effectiveLocation.lat);
+      setCurrentLong(effectiveLocation.long);
+      setDistrict(hint.district);
+    }
+  }, [effectiveLocation]);
 
   const categories = [
     { id: 'road',       label: '🛣️ Roads & Potholes',    dept: isCoimbatore ? 'CCMC Roads & Bridges Dept'        : 'Municipal Roads Division' },
@@ -207,7 +235,7 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
       id: ticketId, type: 'CIVIC', category: selectedCategory, severity: 2,
       title: activeLang === 'ta' ? tamilTitle : title,
       tamilTitle, description: activeLang === 'ta' ? tamilDescription : description,
-      tamilDescription, lat, long, state: 'Tamil Nadu', district, address,
+      tamilDescription, lat: currentLat, long: currentLong, state: 'Tamil Nadu', district, address,
       department: currentCategory.dept, status: 'ROUTED_WARD',
       createdAt: new Date().toISOString(), slaHours: 48,
       photoUrl: photoUrl || null, imageUri: photoUrl || null,
@@ -398,15 +426,50 @@ export default function Screen3BComplaintFlow({ photoData, capturedData, onBack,
           </div>
         </div>
 
-        {/* Routing preview */}
-        <div className="bg-white rounded-xl border border-slate-200 px-3 py-2.5 flex items-start gap-2">
-          <Building2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-xs font-bold text-slate-900">{currentCategory.dept}</p>
-            <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-              <MapPin className="w-3 h-3" /> {address}
-            </p>
+        {/* Routing preview & Verified Location */}
+        <div className="bg-white rounded-xl border border-slate-200 px-3 py-2.5 space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-2 flex-1 min-w-0">
+              <Building2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-slate-900">{currentCategory.dept}</p>
+                <p className="text-[10px] text-slate-500 font-mono">
+                  {currentLat.toFixed(5)}°N, {currentLong.toFixed(5)}°E
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsEditingLocation(!isEditingLocation)}
+              className="text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-lg flex items-center gap-1 shrink-0"
+            >
+              <Edit3 className="w-3 h-3" />
+              {isEditingLocation ? 'Done' : 'Edit Location'}
+            </button>
           </div>
+
+          {/* Location Address display or input */}
+          {isEditingLocation ? (
+            <div className="pt-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1">
+                Verified Incident Location / Landmark:
+              </label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="e.g. Near Bus Stand, Kinathukadavu, Coimbatore"
+                className="w-full bg-slate-50 border border-blue-400 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-medium focus:outline-none"
+              />
+            </div>
+          ) : (
+            <div className="flex items-start gap-1.5 pt-0.5">
+              <MapPin className="w-3.5 h-3.5 text-red-500 mt-0.5 shrink-0" />
+              <p className="text-[11px] text-slate-700 font-medium leading-snug break-words">
+                {address}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Complaint details */}

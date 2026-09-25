@@ -4,6 +4,7 @@ import {
   AlertOctagon, PhoneCall, ShieldAlert, Flame, Send,
   Stethoscope, ArrowLeft, MapPin, Radio, Check, Mail
 } from 'lucide-react';
+import { getTamilNaduCityHint } from '../../../services/geoService';
 
 export default function Screen3AEmergencyFlow({ photoData, capturedData, onBack, onComplete, onDispatched }) {
   const effectiveData = photoData || capturedData;
@@ -15,10 +16,13 @@ export default function Screen3AEmergencyFlow({ photoData, capturedData, onBack,
 
   const storeUserLocation = useCivicStore(state => state.userLocation);
   const effectiveLocation = effectiveData?.location || storeUserLocation;
-  const lat = effectiveLocation?.lat || 11.0168;
-  const long = effectiveLocation?.long || 76.9558;
-  const address = effectiveLocation?.address || 'Gandhipuram, Coimbatore - 641012';
-  const district = effectiveLocation?.district || 'Coimbatore';
+  const lat = effectiveLocation?.lat || 10.8242;
+  const long = effectiveLocation?.long || 77.0185;
+  const hint = getTamilNaduCityHint(lat, long);
+  const address = effectiveLocation?.address && !effectiveLocation.address.includes('Gandhipuram')
+    ? effectiveLocation.address 
+    : `${hint.area}, ${hint.city}, Tamil Nadu`;
+  const district = effectiveLocation?.district || hint.district;
   const photoUrl = effectiveData?.image || null;
 
   const fallbackHospitals = [
