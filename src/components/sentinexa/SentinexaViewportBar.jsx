@@ -37,18 +37,6 @@ export default function SentinexaViewportBar({ activeMode, onSelectMode }) {
           <Monitor className="w-3.5 h-3.5" />
           <span>Desktop (1440×900+)</span>
         </button>
-
-        <button
-          onClick={() => onSelectMode('pitch')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-            activeMode === 'pitch'
-              ? 'bg-slate-900 text-white shadow-sm font-bold'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Layout className="w-3.5 h-3.5" />
-          <span>Presentation Deck</span>
-        </button>
       </div>
 
       {/* Live System Badge */}

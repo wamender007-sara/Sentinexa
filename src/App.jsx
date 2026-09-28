@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import SentinexaViewportBar from './components/sentinexa/SentinexaViewportBar';
 import MobileAppContainer from './components/sentinexa/MobileAppContainer';
 import DesktopCommandCenter from './components/sentinexa/DesktopCommandCenter';
-import HeroPitchShowcase from './components/sentinexa/HeroPitchShowcase';
 
 // Optional legacy full-web suite
 import Navbar from './components/Navbar';
@@ -52,12 +51,6 @@ export default function App() {
         {viewMode === 'desktop' && (
           <div className="flex-1 w-full h-[calc(100vh-53px)] min-h-[700px]">
             <DesktopCommandCenter />
-          </div>
-        )}
-
-        {viewMode === 'pitch' && (
-          <div className="flex-1 w-full">
-            <HeroPitchShowcase />
           </div>
         )}
 
