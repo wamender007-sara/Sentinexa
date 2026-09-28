@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Monitor, Award, Shield } from 'lucide-react';
+import { Smartphone, Monitor, Layout, Shield } from 'lucide-react';
 import SentinexaLogo from './SentinexaLogo';
 import { useCivicStore } from '../../store/useCivicStore';
 
@@ -42,12 +42,12 @@ export default function SentinexaViewportBar({ activeMode, onSelectMode }) {
           onClick={() => onSelectMode('pitch')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             activeMode === 'pitch'
-              ? 'bg-gradient-to-r from-red-600 to-amber-600 text-white shadow-sm font-bold'
+              ? 'bg-slate-900 text-white shadow-sm font-bold'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Award className="w-3.5 h-3.5" />
-          <span>Hero Pitch Slide</span>
+          <Layout className="w-3.5 h-3.5" />
+          <span>Presentation Deck</span>
         </button>
       </div>
 
