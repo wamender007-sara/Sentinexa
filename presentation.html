@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <title>SENTINEXA - Executive Presentation</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap');
 
     @page {
-      size: 11in 8.5in landscape;
+      size: 16in 9in;
       margin: 0;
     }
 
@@ -19,191 +19,226 @@
       print-color-adjust: exact !important;
     }
 
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #F8F9FA;
-      color: #0F172A;
+    html, body {
+      width: 16in;
       margin: 0;
       padding: 0;
+      background-color: #F8F9FA;
+      color: #0F172A;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     .slide {
-      width: 11in;
-      height: 8.5in;
+      width: 16in;
+      height: 9in;
+      max-width: 16in;
+      max-height: 9in;
       page-break-after: always;
       break-after: page;
-      padding: 0.6in 0.8in;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      padding: 0.65in 0.9in;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       background-color: #FFFFFF;
       position: relative;
       overflow: hidden;
-      border-bottom: 1px solid #E2E8F0;
+      box-sizing: border-box;
     }
 
-    /* Top bar */
+    /* Header */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1.5px solid #F1F5F9;
+      border-bottom: 2px solid #F1F5F9;
       padding-bottom: 12px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .category {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       color: #1E40AF;
     }
 
     .confidential {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
+      font-weight: 600;
       color: #94A3B8;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
     }
 
-    /* Titles */
+    /* Slide Titles */
+    .title-area {
+      margin-bottom: 16px;
+    }
+
     .title {
-      font-size: 32px;
+      font-size: 38px;
       font-weight: 900;
       color: #0F172A;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.8px;
       line-height: 1.15;
     }
 
     .subtitle {
-      font-size: 15px;
+      font-size: 17px;
       font-weight: 500;
       color: #64748B;
       margin-top: 6px;
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
-    /* Slide content */
-    .content {
+    /* Content Layout */
+    .content-body {
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      margin: 20px 0;
+      gap: 16px;
+      margin: 8px 0;
     }
 
-    /* Cards */
+    /* Grids */
     .grid-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      gap: 18px;
+      height: 100%;
     }
 
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
+      height: 100%;
     }
 
     .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
+      height: 100%;
     }
 
+    /* Cards */
     .card {
       background: #F8FAFC;
-      border: 1px solid #E2E8F0;
-      border-radius: 12px;
-      padding: 18px 20px;
-    }
-
-    .metric-val {
-      font-size: 26px;
-      font-weight: 900;
-      color: #1E3A8A;
-      display: block;
-      margin: 4px 0;
-    }
-
-    .metric-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #64748B;
-      letter-spacing: 0.5px;
-    }
-
-    .metric-desc {
-      font-size: 11px;
-      color: #475569;
-      line-height: 1.4;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .card-num {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
       color: #1E40AF;
+      letter-spacing: 1px;
       margin-bottom: 8px;
       display: block;
     }
 
     .card-title {
-      font-size: 14px;
+      font-size: 18px;
       font-weight: 800;
       color: #0F172A;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
       line-height: 1.3;
     }
 
     .card-text {
-      font-size: 12px;
+      font-size: 14px;
       color: #475569;
-      line-height: 1.5;
+      line-height: 1.55;
+    }
+
+    /* Big Metric Cards */
+    .metric-card {
+      background: #F8FAFC;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .metric-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748B;
+      letter-spacing: 1px;
+    }
+
+    .metric-val {
+      font-size: 40px;
+      font-weight: 900;
+      color: #1E3A8A;
+      margin: 8px 0;
+      letter-spacing: -1px;
+    }
+
+    .metric-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+      font-weight: 500;
     }
 
     .callout {
       background: #EFF6FF;
-      border: 1px solid #BFDBFE;
-      border-radius: 10px;
-      padding: 12px 18px;
-      font-size: 12px;
+      border: 1.5px solid #BFDBFE;
+      border-radius: 12px;
+      padding: 16px 22px;
+      font-size: 14px;
       font-weight: 600;
       color: #1E40AF;
-      margin-top: 16px;
+      line-height: 1.45;
     }
 
+    /* Footer */
     .footer {
-      border-top: 1.5px solid #F1F5F9;
-      padding-top: 12px;
+      border-top: 2px solid #F1F5F9;
+      padding-top: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
+      font-weight: 600;
       color: #94A3B8;
+      letter-spacing: 0.5px;
     }
 
     .dot-blue {
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background-color: #1E40AF;
-      margin-right: 6px;
+      margin-right: 8px;
     }
 
     .dot-red {
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background-color: #DC2626;
-      margin-right: 6px;
+      margin-right: 8px;
     }
   </style>
 </head>
@@ -213,33 +248,33 @@
   <div class="slide">
     <div class="header">
       <span class="category">Executive Overview</span>
-      <span class="confidential">SENTINEXA · MUNICIPAL INTELLIGENCE</span>
+      <span class="confidential">SENTINEXA · MUNICIPAL INTELLIGENCE MESH</span>
     </div>
-    <div>
+    <div class="title-area">
       <h1 class="title">SENTINEXA</h1>
       <p class="subtitle">Autonomous Municipal Dispatch and Emergency Response Operating System</p>
     </div>
-    <div class="content">
-      <p style="font-size: 14px; color: #334155; line-height: 1.6; max-width: 850px; margin-bottom: 24px;">
+    <div class="content-body">
+      <p style="font-size: 16px; color: #334155; line-height: 1.6; max-width: 1050px; margin-bottom: 8px;">
         An intelligent multi-agent platform connecting citizens directly with municipal departments and emergency services with verifiable geotagged evidence and automated workflow orchestration.
       </p>
-      <div class="grid-4">
-        <div class="card">
+      <div class="grid-4" style="height: 220px;">
+        <div class="metric-card">
           <span class="metric-label">Dispatch Latency</span>
           <span class="metric-val">&lt; 4.0s</span>
           <span class="metric-desc">Instant automated department routing</span>
         </div>
-        <div class="card">
+        <div class="metric-card">
           <span class="metric-label">Municipal SLA</span>
           <span class="metric-val">48 Hours</span>
           <span class="metric-desc">Guaranteed citizen resolution escalation</span>
         </div>
-        <div class="card">
+        <div class="metric-card">
           <span class="metric-label">Vision Accuracy</span>
           <span class="metric-val">98.4%</span>
           <span class="metric-desc">Automated civic issue categorization</span>
         </div>
-        <div class="card">
+        <div class="metric-card">
           <span class="metric-label">Emergency Triage</span>
           <span class="metric-val">&lt; 3 Min</span>
           <span class="metric-desc">Integrated 108 and 100 protocol execution</span>
@@ -258,32 +293,38 @@
       <span class="category">Problem Statement</span>
       <span class="confidential">CIVIC OPERATIONS BOTTLENECK</span>
     </div>
-    <div>
+    <div class="title-area">
       <h2 class="title">Structural Municipal Service Inefficiencies</h2>
-      <p class="subtitle">Current Challenges in Citizen Complaint Redressal and Emergency Response</p>
+      <p class="subtitle">Current Operational Bottlenecks in Citizen Grievance Redressal and Emergency Response</p>
     </div>
-    <div class="content">
-      <div class="grid-3">
+    <div class="content-body">
+      <div class="grid-3" style="height: 240px;">
         <div class="card">
-          <span class="card-num">SECTION 01</span>
-          <h3 class="card-title">Absence of Geotagged Proof</h3>
-          <p class="card-text">
-            Complaints frequently lack exact GPS coordinates and photographic verification, resulting in field verification delays, duplicate submissions, and jurisdictional ambiguity across municipal wards.
-          </p>
+          <div>
+            <span class="card-num">SECTION 01</span>
+            <h3 class="card-title">Absence of Geotagged Proof</h3>
+            <p class="card-text">
+              Complaints frequently lack exact GPS coordinates and photographic verification, resulting in field verification delays, duplicate submissions, and jurisdictional ambiguity across municipal wards.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <span class="card-num">SECTION 02</span>
-          <h3 class="card-title">Manual Routing Bottlenecks</h3>
-          <p class="card-text">
-            Grievances pass through several administrative levels and manual sorting desks, leading to standard response latencies of 7 to 14 days before reaching the responsible ward engineer.
-          </p>
+          <div>
+            <span class="card-num">SECTION 02</span>
+            <h3 class="card-title">Manual Routing Bottlenecks</h3>
+            <p class="card-text">
+              Grievances pass through several administrative levels and manual sorting desks, leading to standard response latencies of 7 to 14 days before reaching the responsible ward engineer.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <span class="card-num">SECTION 03</span>
-          <h3 class="card-title">Siloed Emergency Services</h3>
-          <p class="card-text">
-            Medical trauma, police, and civic emergency systems operate in isolated silos without unified geospatial mapping, slowing down critical multi-agency coordination during severe accidents.
-          </p>
+          <div>
+            <span class="card-num">SECTION 03</span>
+            <h3 class="card-title">Siloed Emergency Services</h3>
+            <p class="card-text">
+              Medical trauma, police, and civic emergency systems operate in isolated silos without unified geospatial mapping, slowing down critical multi-agency coordination during severe accidents.
+            </p>
+          </div>
         </div>
       </div>
       <div class="callout">
@@ -302,35 +343,55 @@
       <span class="category">Proposed Solution</span>
       <span class="confidential">PLATFORM ARCHITECTURE</span>
     </div>
-    <div>
+    <div class="title-area">
       <h2 class="title">The Sentinexa Autonomous Civic Mesh</h2>
       <p class="subtitle">End-to-End Autonomous Platform Connecting Citizens Directly to Field Engineers</p>
     </div>
-    <div class="content">
-      <div class="grid-2">
+    <div class="content-body">
+      <div class="grid-2" style="height: 290px;">
         <div class="card">
-          <div style="margin-bottom: 6px;"><span class="dot-blue"></span><strong style="font-size: 14px; color: #0F172A;">Cryptographic Geo-Cam</strong></div>
-          <p class="card-text" style="padding-left: 14px;">
-            Burn-in optical watermarking embeds exact latitude, longitude, timestamp, and SHA-256 HMAC authentication into the evidence image at capture time, preventing tampering or stale reports.
-          </p>
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span class="dot-blue"></span>
+              <h3 class="card-title" style="margin-bottom: 0;">Cryptographic Geo-Cam</h3>
+            </div>
+            <p class="card-text" style="padding-left: 18px;">
+              Burn-in optical watermarking embeds exact latitude, longitude, timestamp, and SHA-256 HMAC authentication into the evidence image at capture time, preventing tampering or stale reports.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <div style="margin-bottom: 6px;"><span class="dot-blue"></span><strong style="font-size: 14px; color: #0F172A;">Autonomous Multi-Agent Routing</strong></div>
-          <p class="card-text" style="padding-left: 14px;">
-            Intelligent routing agents parse the complaint, detect incident type (Road, Water, Sanitation, Electrical), resolve municipal ward boundaries, and assign target engineer credentials instantly.
-          </p>
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span class="dot-blue"></span>
+              <h3 class="card-title" style="margin-bottom: 0;">Autonomous Multi-Agent Routing</h3>
+            </div>
+            <p class="card-text" style="padding-left: 18px;">
+              Intelligent routing agents parse the complaint, detect incident type (Road, Water, Sanitation, Electrical), resolve municipal ward boundaries, and assign target engineer credentials instantly.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <div style="margin-bottom: 6px;"><span class="dot-blue"></span><strong style="font-size: 14px; color: #0F172A;">Real-Time Webhook Gateway</strong></div>
-          <p class="card-text" style="padding-left: 14px;">
-            Autonomous n8n cloud workflows dispatch high-priority notifications, structured email packets, and department tickets within four seconds of citizen submission.
-          </p>
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span class="dot-blue"></span>
+              <h3 class="card-title" style="margin-bottom: 0;">Real-Time Webhook Gateway</h3>
+            </div>
+            <p class="card-text" style="padding-left: 18px;">
+              Autonomous n8n cloud workflows dispatch high-priority notifications, structured email packets, and department tickets within four seconds of citizen submission.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <div style="margin-bottom: 6px;"><span class="dot-blue"></span><strong style="font-size: 14px; color: #0F172A;">Escalation and SLA Enforcement</strong></div>
-          <p class="card-text" style="padding-left: 14px;">
-            Guaranteed 48-hour service level agreement monitoring with automated escalation triggers ensuring accountability and citizen transparency across all civic wards.
-          </p>
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span class="dot-blue"></span>
+              <h3 class="card-title" style="margin-bottom: 0;">Escalation and SLA Enforcement</h3>
+            </div>
+            <p class="card-text" style="padding-left: 18px;">
+              Guaranteed 48-hour service level agreement monitoring with automated escalation triggers ensuring accountability and citizen transparency across all civic wards.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -346,39 +407,51 @@
       <span class="category">Operational Workflow</span>
       <span class="confidential">CITIZEN-TO-RESOLUTION LIFECYCLE</span>
     </div>
-    <div>
+    <div class="title-area">
       <h2 class="title">End-to-End Incident Resolution Lifecycle</h2>
       <p class="subtitle">Systematic Four-Phase Architecture for Municipal Redressal</p>
     </div>
-    <div class="content">
-      <div class="grid-4">
+    <div class="content-body">
+      <div class="grid-4" style="height: 300px;">
         <div class="card">
-          <span class="card-num">PHASE 01</span>
-          <h4 class="card-title">Geotagged Capture</h4>
-          <p class="card-text">
-            Citizen photographs civic issue. Camera automatically stamps GPS coordinates, district name, and cryptographic validation into the image.
-          </p>
+          <div>
+            <span class="card-num">PHASE 01</span>
+            <h4 class="card-title">Geotagged Capture</h4>
+            <p class="card-text">
+              Citizen photographs civic issue. Camera automatically stamps GPS coordinates, district name, and cryptographic validation into the image.
+            </p>
+          </div>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1E40AF; font-weight: 700; margin-top: 10px;">Immediate Sensing &rarr;</span>
         </div>
         <div class="card">
-          <span class="card-num">PHASE 02</span>
-          <h4 class="card-title">Classification</h4>
-          <p class="card-text">
-            System verifies incident category across Road Infrastructure, Water Pipeline, Garbage Sanitation, or Electrical Grid with automated priority tagging.
-          </p>
+          <div>
+            <span class="card-num">PHASE 02</span>
+            <h4 class="card-title">Classification</h4>
+            <p class="card-text">
+              System verifies incident category across Road Infrastructure, Water Pipeline, Garbage Sanitation, or Electrical Grid with automated priority tagging.
+            </p>
+          </div>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1E40AF; font-weight: 700; margin-top: 10px;">Vision Verification &rarr;</span>
         </div>
         <div class="card">
-          <span class="card-num">PHASE 03</span>
-          <h4 class="card-title">Autonomous Dispatch</h4>
-          <p class="card-text">
-            n8n cloud orchestrator routes structured municipal payload to ward officers, official department emails, and administrative dashboards within 4 seconds.
-          </p>
+          <div>
+            <span class="card-num">PHASE 03</span>
+            <h4 class="card-title">Autonomous Dispatch</h4>
+            <p class="card-text">
+              n8n cloud orchestrator routes structured municipal payload to ward officers, official department emails, and administrative dashboards within 4 seconds.
+            </p>
+          </div>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1E40AF; font-weight: 700; margin-top: 10px;">Sub-4s Dispatch &rarr;</span>
         </div>
         <div class="card">
-          <span class="card-num">PHASE 04</span>
-          <h4 class="card-title">SLA Escalation</h4>
-          <p class="card-text">
-            Ticket lifecycle is monitored against 48-hour resolution benchmark with automated civic mesh escalation if pending status exceeds limits.
-          </p>
+          <div>
+            <span class="card-num">PHASE 04</span>
+            <h4 class="card-title">SLA Escalation</h4>
+            <p class="card-text">
+              Ticket lifecycle is monitored against 48-hour resolution benchmark with automated civic mesh escalation if pending status exceeds limits.
+            </p>
+          </div>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1E40AF; font-weight: 700; margin-top: 10px;">Verified Solved &check;</span>
         </div>
       </div>
     </div>
@@ -394,35 +467,55 @@
       <span class="category">Emergency Response Protocol</span>
       <span class="confidential">RAPID RESPONSE FRAMEWORK</span>
     </div>
-    <div>
+    <div class="title-area">
       <h2 class="title">High-Priority Emergency SOS Framework</h2>
       <p class="subtitle">Unified Rapid Response for Ambulance (108) and Police (100) Dispatches</p>
     </div>
-    <div class="content">
-      <div class="grid-2">
+    <div class="content-body">
+      <div class="grid-2" style="height: 290px;">
         <div class="card">
-          <div style="margin-bottom: 6px;"><span class="dot-red"></span><strong style="font-size: 14px; color: #0F172A;">Immediate Geolocation Beacon</strong></div>
-          <p class="card-text" style="padding-left: 14px;">
-            Locks high-accuracy GPS coordinates down to four meters and identifies the exact district and road intersection for dispatch vehicle guidance.
-          </p>
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span class="dot-red"></span>
+              <h3 class="card-title" style="margin-bottom: 0;">Immediate Geolocation Beacon</h3>
+            </div>
+            <p class="card-text" style="padding-left: 18px;">
+              Locks high-accuracy GPS coordinates down to four meters and identifies the exact district and road intersection for dispatch vehicle guidance.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <div style="margin-bottom: 6px;"><span class="dot-red"></span><strong style="font-size: 14px; color: #0F172A;">Nearest Trauma Care Routing</strong></div>
-          <p class="card-text" style="padding-left: 14px;">
-            Calculates real-time proximity and estimated transit time to the three closest accredited medical facilities and emergency surgical units.
-          </p>
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span class="dot-red"></span>
+              <h3 class="card-title" style="margin-bottom: 0;">Nearest Trauma Care Routing</h3>
+            </div>
+            <p class="card-text" style="padding-left: 18px;">
+              Calculates real-time proximity and estimated transit time to the three closest accredited medical facilities and emergency surgical units.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <div style="margin-bottom: 6px;"><span class="dot-red"></span><strong style="font-size: 14px; color: #0F172A;">Multi-Agency Alert Broadcast</strong></div>
-          <p class="card-text" style="padding-left: 14px;">
-            Simultaneously alerts ambulance control rooms and police district monitors with structured patient and incident summaries.
-          </p>
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span class="dot-red"></span>
+              <h3 class="card-title" style="margin-bottom: 0;">Multi-Agency Alert Broadcast</h3>
+            </div>
+            <p class="card-text" style="padding-left: 18px;">
+              Simultaneously alerts ambulance control rooms and police district monitors with structured patient and incident summaries.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <div style="margin-bottom: 6px;"><span class="dot-red"></span><strong style="font-size: 14px; color: #0F172A;">Sub-3 Minute Triage Target</strong></div>
-          <p class="card-text" style="padding-left: 14px;">
-            Eliminates telephone voice ambiguity by transmitting verified coordinates and incident data directly to emergency field responders.
-          </p>
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span class="dot-red"></span>
+              <h3 class="card-title" style="margin-bottom: 0;">Sub-3 Minute Triage Target</h3>
+            </div>
+            <p class="card-text" style="padding-left: 18px;">
+              Eliminates telephone voice ambiguity by transmitting verified coordinates and incident data directly to emergency field responders.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -438,39 +531,47 @@
       <span class="category">Technical Architecture</span>
       <span class="confidential">ENTERPRISE TECH STACK</span>
     </div>
-    <div>
+    <div class="title-area">
       <h2 class="title">Enterprise Architecture &amp; Technology Stack</h2>
       <p class="subtitle">Scalable, High-Availability Technology Stack for Municipal Deployments</p>
     </div>
-    <div class="content">
-      <div class="grid-2">
+    <div class="content-body">
+      <div class="grid-2" style="height: 290px;">
         <div class="card">
-          <span class="metric-label">Presentation Layer</span>
-          <h4 style="font-size: 14px; font-weight: 800; color: #1E3A8A; margin: 4px 0 6px 0;">React 18 · Vite · Tailwind CSS</h4>
-          <p class="card-text">
-            Responsive mobile-first application adapting seamlessly between mobile smartphones and desktop command displays with zero runtime dependency overhead.
-          </p>
+          <div>
+            <span class="metric-label">Presentation Layer</span>
+            <h4 style="font-size: 16px; font-weight: 800; color: #1E3A8A; margin: 4px 0 8px 0;">React 18 · Vite · Tailwind CSS</h4>
+            <p class="card-text">
+              Responsive mobile-first application adapting seamlessly between mobile smartphones and desktop command displays with zero runtime dependency overhead.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <span class="metric-label">Geospatial Intelligence</span>
-          <h4 style="font-size: 14px; font-weight: 800; color: #1E3A8A; margin: 4px 0 6px 0;">Leaflet Engine · OpenStreetMap · GIS Mesh</h4>
-          <p class="card-text">
-            Open-source, watermark-free basemaps with real-time district coordinate bounds, high-frequency GPS tracking, and spatial clustering.
-          </p>
+          <div>
+            <span class="metric-label">Geospatial Intelligence</span>
+            <h4 style="font-size: 16px; font-weight: 800; color: #1E3A8A; margin: 4px 0 8px 0;">Leaflet Engine · OpenStreetMap · GIS Mesh</h4>
+            <p class="card-text">
+              Open-source, watermark-free basemaps with real-time district coordinate bounds, high-frequency GPS tracking, and spatial clustering.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <span class="metric-label">Workflow Orchestration</span>
-          <h4 style="font-size: 14px; font-weight: 800; color: #1E3A8A; margin: 4px 0 6px 0;">n8n Cloud · REST Webhook APIs · SMTP Relay</h4>
-          <p class="card-text">
-            Autonomous micro-workflows running continuous 5-hour public grievance monitoring, citizen dispatch routing, and administrative email dispatch.
-          </p>
+          <div>
+            <span class="metric-label">Workflow Orchestration</span>
+            <h4 style="font-size: 16px; font-weight: 800; color: #1E3A8A; margin: 4px 0 8px 0;">n8n Cloud · REST Webhook APIs · SMTP Relay</h4>
+            <p class="card-text">
+              Autonomous micro-workflows running continuous 5-hour public grievance monitoring, citizen dispatch routing, and administrative email dispatch.
+            </p>
+          </div>
         </div>
         <div class="card">
-          <span class="metric-label">Data &amp; Security Layer</span>
-          <h4 style="font-size: 14px; font-weight: 800; color: #1E3A8A; margin: 4px 0 6px 0;">Zustand Reactive Store · SHA-256 HMAC</h4>
-          <p class="card-text">
-            Client-side reactive state management with cryptographically verified evidence generation, tamper-proof hashes, and offline synchronization tolerance.
-          </p>
+          <div>
+            <span class="metric-label">Data &amp; Security Layer</span>
+            <h4 style="font-size: 16px; font-weight: 800; color: #1E3A8A; margin: 4px 0 8px 0;">Zustand Reactive Store · SHA-256 HMAC</h4>
+            <p class="card-text">
+              Client-side reactive state management with cryptographically verified evidence generation, tamper-proof hashes, and offline synchronization tolerance.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -486,53 +587,53 @@
       <span class="category">Pilot Metrics &amp; Roadmap</span>
       <span class="confidential">PILOT RESULTS &amp; EXPANSION</span>
     </div>
-    <div>
+    <div class="title-area">
       <h2 class="title">Pilot Results and State-Wide Scalability</h2>
       <p class="subtitle">Demonstrated Performance in Coimbatore / Kinathukadavu Pilot Zone</p>
     </div>
-    <div class="content">
-      <div class="grid-4" style="margin-bottom: 20px;">
-        <div class="card" style="text-align: center;">
-          <span class="metric-val">184+</span>
-          <span style="font-size: 12px; font-weight: 800; color: #0F172A; display: block; margin-top: 2px;">Verified Resolved</span>
-          <span class="metric-desc" style="display: block; margin-top: 2px;">Across pilot wards</span>
+    <div class="content-body">
+      <div class="grid-4" style="height: 140px; margin-bottom: 8px;">
+        <div class="card" style="text-align: center; justify-content: center;">
+          <span class="metric-val" style="font-size: 32px; margin: 0;">184+</span>
+          <span style="font-size: 13px; font-weight: 800; color: #0F172A; margin-top: 4px;">Verified Resolved</span>
+          <span class="metric-desc">Across pilot wards</span>
         </div>
-        <div class="card" style="text-align: center;">
-          <span class="metric-val">3.8s</span>
-          <span style="font-size: 12px; font-weight: 800; color: #0F172A; display: block; margin-top: 2px;">Dispatch Latency</span>
-          <span class="metric-desc" style="display: block; margin-top: 2px;">Citizen tap to webhook</span>
+        <div class="card" style="text-align: center; justify-content: center;">
+          <span class="metric-val" style="font-size: 32px; margin: 0;">3.8s</span>
+          <span style="font-size: 13px; font-weight: 800; color: #0F172A; margin-top: 4px;">Dispatch Latency</span>
+          <span class="metric-desc">Citizen tap to webhook</span>
         </div>
-        <div class="card" style="text-align: center;">
-          <span class="metric-val">94.2%</span>
-          <span style="font-size: 12px; font-weight: 800; color: #0F172A; display: block; margin-top: 2px;">SLA Adherence</span>
-          <span class="metric-desc" style="display: block; margin-top: 2px;">Resolved within 48h</span>
+        <div class="card" style="text-align: center; justify-content: center;">
+          <span class="metric-val" style="font-size: 32px; margin: 0;">94.2%</span>
+          <span style="font-size: 13px; font-weight: 800; color: #0F172A; margin-top: 4px;">SLA Adherence</span>
+          <span class="metric-desc">Resolved within 48h</span>
         </div>
-        <div class="card" style="text-align: center;">
-          <span class="metric-val">38</span>
-          <span style="font-size: 12px; font-weight: 800; color: #0F172A; display: block; margin-top: 2px;">Districts Ready</span>
-          <span class="metric-desc" style="display: block; margin-top: 2px;">Standardized schema</span>
+        <div class="card" style="text-align: center; justify-content: center;">
+          <span class="metric-val" style="font-size: 32px; margin: 0;">38</span>
+          <span style="font-size: 13px; font-weight: 800; color: #0F172A; margin-top: 4px;">Districts Ready</span>
+          <span class="metric-desc">Standardized schema</span>
         </div>
       </div>
 
-      <div class="grid-3">
+      <div class="grid-3" style="height: 140px;">
         <div class="card">
           <span class="card-num">PHASE 01 · COMPLETE</span>
-          <h4 class="card-title">Pilot Validation</h4>
-          <p class="card-text">
+          <h4 class="card-title" style="font-size: 15px; margin-bottom: 4px;">Pilot Validation</h4>
+          <p class="card-text" style="font-size: 12px;">
             Kinathukadavu and Coimbatore municipal zone deployment with live n8n webhook and email alerts.
           </p>
         </div>
         <div class="card">
           <span class="card-num">PHASE 02 · CURRENT</span>
-          <h4 class="card-title">District Integration</h4>
-          <p class="card-text">
+          <h4 class="card-title" style="font-size: 15px; margin-bottom: 4px;">District Integration</h4>
+          <p class="card-text" style="font-size: 12px;">
             Direct API connectors to municipal corporation grievance portals and department CRM systems.
           </p>
         </div>
         <div class="card">
           <span class="card-num">PHASE 03 · PLANNED</span>
-          <h4 class="card-title">State-Wide Mesh</h4>
-          <p class="card-text">
+          <h4 class="card-title" style="font-size: 15px; margin-bottom: 4px;">State-Wide Mesh</h4>
+          <p class="card-text" style="font-size: 12px;">
             Centralized command center integration across all 38 municipal corporations in Tamil Nadu.
           </p>
         </div>
